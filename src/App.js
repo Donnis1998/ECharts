@@ -149,19 +149,83 @@ function App() {
     ],
   };
 
+  const customComponent2 = (params) => {
+    const { name, value } = params.data;
+
+    let c = `<div>
+      <h4>Hola desde ${name}</h4>
+      ${value.map(info =>{
+        return (
+          `<div style={{width: 100}}><p><span style='font-weight:bold'>${
+            Object.keys(info)[0]
+          }: </span><span>${Object.values(info)[0]}Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</span></p></div><br/>`
+        )
+      })}
+    </div>`;
+
+
+    /* param.data.value.map((info) => {
+      message += `<div style='width: 10px, display:flex'><span style='font-weight:bold'>${
+        Object.keys(info)[0]
+      }: </span><span>${Object.values(info)[0]}</span><br/></div>`;
+    }); */
+
+    return c.toString();
+  };
+
+  const customComponent = `<div>
+      <h4>Hola desde customComponent</h4>
+    </div>`;
+
   const option = {
+    title: {
+      id: "1",
+      show: true,
+      text: "BSoft Dependencies",
+      subtext: "All dependencies in bsoft",
+      link: "https://www.youtube.com/", //Este enlace se activará cuando se de click en el titulo
+      target: "blank", //self //blank para abrir en una nueva pestaña
+      left: 20, // '20%' // left // center // right
+      top: 20, // '20%' // left // center // right
+      textStyle: {
+        fontSize: 30,
+        fontStyle: "normal", // italic // oblique
+        fontWeight: "bold", // normal // bolder // lighter // 100, 200, ...
+        //width: 50,
+        //height: 50,
+      },
+      subtextStyle: {
+        fontSize: 20,
+      },
+    },
     tooltip: {
-      trigger: "item",
-      triggerOn: "mousemove",
-      //alwaysShowContent: true,
-      zLevel: 2,
-      //position:[10, 10]
+      show: true,
+      trigger: "item", //axis //none
+      triggerOn: "mousemove", //click
+      showContent: true, //false
+      alwaysShowContent: false,
+      //showDelay: 100,
+      //hideDelay: 100,
+      //zLevel: 2,
+      //position:[10, 10],
+      renderMode: "html", // richText
+      //confine: true,
+      ellipsis: '...',
       textStyle: {
         //fontWeight: 'bold'
+        with: 100,
+        overflow: 'truncate',
+        textBorderColor:'#FF3'
       },
-      backgroundColor: "rgba(50,50,50,0.2)",
+      backgroundColor: '#FFF',
+      borderColor: '#000',
+      borderWidth: 1,
+      //width: 100,
+      className: "my_tooltip", //Specify the classes for the tooltip root DOM ,
+      position: "top",
       formatter: function (param) {
-        //console.log("param", param);
+        return customComponent2(param);
+        console.log("param", param);
         //param = param[0];
 
         let message = "";
@@ -244,7 +308,8 @@ function App() {
     if (listData.length !== 0) {
       var myChart = echarts.init(document.getElementById("main"), undefined, {
         width: 1000,
-        height: 800,
+        height: 400,
+        locale: "EN",
       });
 
       option && myChart.setOption(option);
