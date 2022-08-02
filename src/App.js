@@ -156,6 +156,9 @@ function App() {
       //alwaysShowContent: true,
       zLevel: 2,
       //position:[10, 10]
+      textStyle: {
+        //fontWeight: 'bold'
+      },
       backgroundColor: "rgba(50,50,50,0.2)",
       formatter: function (param) {
         //console.log("param", param);
@@ -164,12 +167,12 @@ function App() {
         let message = "";
 
         param.data.value.map((info) => {
-          message += `<span style='font-weight:bold'>${
+          message += `<div style='width: 10px, display:flex'><span style='font-weight:bold'>${
             Object.keys(info)[0]
-          }: </span><span>${Object.values(info)[0]}</span><br/>`;
+          }: </span><span>${Object.values(info)[0]}</span><br/></div>`;
         });
 
-        return message;
+        return `<div>${message}</div>`;
 
         return [
           "" + param.data.name + '<hr size=1 style="margin: 3px 0">',
@@ -256,17 +259,57 @@ function App() {
     setKeyValue("");
   };
 
+  const CheckArray = (arreglo) => {
+    let aux = [...arreglo];
+
+    arreglo.map((data, index) => {
+      if (data.name === prevNodo) {
+        //console.log(index + ". Encontró " + data.name + " - " + prevNodo);
+
+        aux[index].children.push({
+          name: nodo,
+          value: listValue,
+          collapsed: true,
+          children: [],
+        });
+
+        return 1;
+      } else {
+        //console.log("entro a la recursion");
+        return CheckArray(data.children);
+      }
+    });
+
+    setListData(aux);
+    setlistValue([]);
+    setNodo("");
+  };
   const handleListData = () => {
     let aux = [...listData];
     //console.log("nodo previo", prevNodo);
 
+    //testing -- passed --> la funciion con recursividad funciona bien
+    if (listData.length === 0) {
+      aux.push({ name: nodo, value: listValue, collapsed: true, children: [] });
+      //Como es el primer nodo en registrarse, se envia directanebte a a lista de nodos previos, para que pueda ser seleccionado en futuras ocaciones
+      setListNode([{ id: nodo, label: nodo }]);
+      setListData(aux);
+      setlistValue([]);
+      setNodo("");
+    } else {
+      CheckArray(aux);
+      let aux_nodes = [...listNode];
+      aux_nodes.push({ id: nodo, label: nodo });
+      setListNode(aux_nodes);
+    }
+
+    return;
+    //functional
     if (listData.length === 0) {
       aux.push({ name: nodo, value: listValue, collapsed: true, children: [] });
       //Como es el primer nodo en registrarse, se envia directanebte a a lista de nodos previos, para que pueda ser seleccionado en futuras ocaciones
       setListNode([{ id: nodo, label: nodo }]);
     } else {
-      console.log("entro1");
-
       aux.map((val, index) => {
         console.log(val.name + " - " + prevNodo);
         if (val.name === prevNodo) {
@@ -278,7 +321,6 @@ function App() {
           });
         }
       });
-      //aux.push({ name: nodo, value: listValue, collapsed: true, children: [] });
 
       let aux_nodes = [...listNode];
       aux_nodes.push({ id: nodo, label: nodo });
