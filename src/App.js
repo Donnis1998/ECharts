@@ -4,16 +4,19 @@ import { useEffect, useState } from "react";
 import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
 import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
 import { Button } from "@bsoftsolution/base-ui.ui.button";
+import axios from "axios";
 import {
   createNewTree,
   GetListAvailablesTrees,
   GetSavedTree,
+  RemoveTree,
   SaveNewTree,
   TreesAvailables,
 } from "./data/createJSON";
 function App() {
   // initialize the echarts instance
   const [prevNodo, setPrevNodo] = useState("");
+  const [currentModel, setCurrentModel] = useState("");
   const [modeloName, setModeloName] = useState("");
   const [nodo, setNodo] = useState("");
   const [keyValue, setKeyValue] = useState("");
@@ -25,9 +28,13 @@ function App() {
     { id: "bsoft.risk", label: "bsoft.risk" }, */
   ]);
 
-  const [listAvailableTrees, setListAvailableTrees] = useState(
-    GetListAvailablesTrees()
-  );
+  const SERVER = "http://localhost:4000";
+
+  useEffect(() => {
+    GetModelList();
+  }, []);
+
+  const [listAvailableTrees, setListAvailableTrees] = useState([]); //GetListAvailablesTrees()
 
   const data = {
     name: "BSoft", //nombre de la etiqueta que se visualizar en el arbol
@@ -459,21 +466,60 @@ function App() {
     setNodo("");
   };
 
-  const handleTreeSearch = (name) => {
+  const handleTreeSearch = async (name) => {
+    let res = await axios.get(`${SERVER}/${name}`);
+
+    if (res.status === 200) {
+      setListData(res.data);
+    } else {
+      window.alert(`Ha ocurrido un error al obtener el modelo ${name}`);
+    }
+
+    setCurrentModel(name);
+
+    return;
+    /* Utilizando LocalStorage */
     let tree = GetSavedTree(name);
-
-    console.log("Arbol almacenado obtenido", tree);
-
     if (tree !== null) {
       setListData(tree);
       GetNodes(tree, []);
+      setCurrentModel(name);
       //setListNode([])
     }
   };
 
-  const SaveModel = () => {
+  const SaveModel = async () => {
+    let data = {
+      name: modeloName,
+      chart: listData,
+    };
+
+    let res = await axios.post(`${SERVER}/register`, data);
+
+    if (res.status === 204) {
+      NewModel();
+      window.alert("El modelo se ha guardado exitosamente.");
+    } else {
+      window.alert("Ha ocurrido un error al guardar el modelo.");
+    }
+
+    return;
+    /* Utilizando LocalStorage */
     console.log("se guardara el siguiente modelo " + modeloName, listData);
     SaveNewTree(modeloName, listData);
+    NewModel();
+    let trees = GetListAvailablesTrees();
+    setListAvailableTrees(trees);
+  };
+
+  const DeleteModel = () => {
+    console.log("se guardara eliminara el siguiente modelo " + currentModel);
+    return
+    /* Utilziando localstorage */
+    RemoveTree(currentModel);
+    NewModel();
+    let trees = GetListAvailablesTrees();
+    setListAvailableTrees(trees);
   };
 
   const NewModel = () => {
@@ -488,6 +534,15 @@ function App() {
     //SaveNewTree(modeloName, listData);
   };
 
+  const GetModelList = async () => {
+    let res = await axios.get(`${SERVER}/`);
+
+    if (res.status === 200) {
+      setListAvailableTrees(res.data);
+    } else {
+      window.alert("Ha ocurrido un error al obtener la lista de modelos.");
+    }
+  };
   return (
     <div className="App">
       <div
@@ -500,17 +555,37 @@ function App() {
           flexDirection: "column",
         }}
       >
-        <DropdownList
-          dataSource={listAvailableTrees}
-          fields={{ value: "id", text: "label" }}
-          bsTextbox={true}
-          allowFiltering={true}
-          operator="StartsWith"
-          filterBy="label"
-          placeholder="Árboles disponibles"
-          filterBarPlaceholder="Buscar"
-          change={(data) => handleTreeSearch(data.value)}
-        />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <DropdownList
+            dataSource={listAvailableTrees}
+            fields={{ value: "id", text: "label" }}
+            bsTextbox={true}
+            allowFiltering={true}
+            operator="StartsWith"
+            filterBy="label"
+            placeholder="Árboles disponibles"
+            filterBarPlaceholder="Buscar"
+            change={(data) => handleTreeSearch(data.value)}
+          />
+
+          <Button
+            textButton="Eliminar modelo"
+            variantType="outline"
+            variantName="danger"
+            width={100}
+            style={{ marginBlock: 20, marginInline: 10 }}
+            onClick={() => {
+              DeleteModel();
+            }}
+          />
+        </div>
 
         <h4>Agregar nodos</h4>
 
@@ -562,6 +637,10 @@ function App() {
             }}
           />
         </div>
+        <p>
+          Tamaño de la lista de contenido:
+          {listValue.length}
+        </p>
 
         {listNode.length > 0 && (
           <DropdownList
@@ -617,10 +696,6 @@ function App() {
         />
       </div>
 
-      <p>
-        Lista content:
-        {listValue.length}
-      </p>
       {/* <p>
         Lista Data:
         {JSON.stringify(listData)}

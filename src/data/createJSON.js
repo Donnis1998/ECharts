@@ -24,6 +24,10 @@ export const GetSavedTree = (name) => {
   return JSON.parse(localStorage.getItem(name));
 };
 
+export const RemoveTree = (name) => {
+  localStorage.removeItem(name);
+};
+
 export const GetListAvailablesTrees = () => {
   let list = [];
   for (let index = 0; index < localStorage.length; index++) {
