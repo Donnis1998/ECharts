@@ -3,9 +3,18 @@ import * as echarts from "echarts";
 import { useEffect, useState } from "react";
 import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
 import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
+import { Button } from "@bsoftsolution/base-ui.ui.button";
+import {
+  createNewTree,
+  GetListAvailablesTrees,
+  GetSavedTree,
+  SaveNewTree,
+  TreesAvailables,
+} from "./data/createJSON";
 function App() {
   // initialize the echarts instance
   const [prevNodo, setPrevNodo] = useState("");
+  const [modeloName, setModeloName] = useState("");
   const [nodo, setNodo] = useState("");
   const [keyValue, setKeyValue] = useState("");
   const [contentValue, setContentValue] = useState("");
@@ -15,6 +24,10 @@ function App() {
     /* { id: "bsoft", label: "bsoft" },
     { id: "bsoft.risk", label: "bsoft.risk" }, */
   ]);
+
+  const [listAvailableTrees, setListAvailableTrees] = useState(
+    GetListAvailablesTrees()
+  );
 
   const data = {
     name: "BSoft", //nombre de la etiqueta que se visualizar en el arbol
@@ -154,15 +167,12 @@ function App() {
 
     let c = `<div>
       <h4>Hola desde ${name}</h4>
-      ${value.map(info =>{
-        return (
-          `<div style={{width: 100}}><p><span style='font-weight:bold'>${
-            Object.keys(info)[0]
-          }: </span><span>${Object.values(info)[0]}Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</span></p></div><br/>`
-        )
+      ${value.map((info) => {
+        return `<div><p><span style='font-weight:bold'>${
+          Object.keys(info)[0]
+        }: </span><span>${Object.values(info)[0]}</span></p></div><br/>`;
       })}
     </div>`;
-
 
     /* param.data.value.map((info) => {
       message += `<div style='width: 10px, display:flex'><span style='font-weight:bold'>${
@@ -185,7 +195,7 @@ function App() {
       subtext: "All dependencies in bsoft",
       link: "https://www.youtube.com/", //Este enlace se activará cuando se de click en el titulo
       target: "blank", //self //blank para abrir en una nueva pestaña
-      left: 20, // '20%' // left // center // right
+      left: 100, // '20%' // left // center // right
       top: 20, // '20%' // left // center // right
       textStyle: {
         fontSize: 30,
@@ -210,19 +220,19 @@ function App() {
       //position:[10, 10],
       renderMode: "html", // richText
       //confine: true,
-      ellipsis: '...',
+      ellipsis: "...",
       textStyle: {
         //fontWeight: 'bold'
         with: 100,
-        overflow: 'truncate',
-        textBorderColor:'#FF3'
+        overflow: "truncate",
+        textBorderColor: "#FF3",
       },
-      backgroundColor: '#FFF',
-      borderColor: '#000',
+      backgroundColor: "#FFF",
+      borderColor: "#000",
       borderWidth: 1,
       //width: 100,
       className: "my_tooltip", //Specify the classes for the tooltip root DOM ,
-      position: "top",
+      position: "right",
       formatter: function (param) {
         return customComponent2(param);
         console.log("param", param);
@@ -263,7 +273,7 @@ function App() {
         symbolSize: 17,
         edgeShape: "curve", //curve //polyline
         edgeForkPosition: "50%",
-        initialTreeDepth: 2,
+        initialTreeDepth: -1, // 2,
         lineStyle: {
           width: 2,
         },
@@ -334,10 +344,12 @@ function App() {
         aux[index].children.push({
           name: nodo,
           value: listValue,
-          collapsed: true,
+          collapsed: false,
           children: [],
         });
 
+        //SaveNewTree("BSoft", aux);
+        console.log("lo encontro y lo guardo", aux);
         return 1;
       } else {
         //console.log("entro a la recursion");
@@ -349,13 +361,63 @@ function App() {
     setlistValue([]);
     setNodo("");
   };
+
+  const GetNodes = (arreglo, nodes) => {
+    let aux = [...arreglo];
+    let auxNodes = [...nodes];
+    console.log("nodos que llegan", nodes);
+
+    //funciona un 90% bien
+    let array_length = aux.length;
+    if (array_length > 0) {
+      arreglo.map((data, index) => {
+        auxNodes.push({ id: data.name, label: data.name });
+        console.log("nodos agregado de " + data.name, auxNodes);
+        return GetNodes(data.children, auxNodes);
+      });
+    } else {
+      return 1;
+    }
+
+    /* let array_length = aux.length;
+    if (array_length > 0) {
+      aux.map((data, index) => {
+        auxNodes.push({ id: data.name, label: data.name });
+        console.log("nodos agregados", auxNodes);
+
+        return GetNodes(data.children, auxNodes);
+      });
+    } else {
+      //return 1;
+    } */
+
+    /* ---- 
+    aux.map((data, index) => {
+      if (data.name === "" || data.name === undefined || data.name === null) {
+        return 1;
+      } else {
+        auxNodes.push({ id: data.name, label: data.name });
+        console.log("nodos agregado de " + data.name, auxNodes);
+
+        return GetNodes(data.children, auxNodes);
+      }
+    });*/
+
+    //setListNode(aux);
+  };
+
   const handleListData = () => {
     let aux = [...listData];
     //console.log("nodo previo", prevNodo);
 
     //testing -- passed --> la funciion con recursividad funciona bien
     if (listData.length === 0) {
-      aux.push({ name: nodo, value: listValue, collapsed: true, children: [] });
+      aux.push({
+        name: nodo,
+        value: listValue,
+        collapsed: false,
+        children: [],
+      });
       //Como es el primer nodo en registrarse, se envia directanebte a a lista de nodos previos, para que pueda ser seleccionado en futuras ocaciones
       setListNode([{ id: nodo, label: nodo }]);
       setListData(aux);
@@ -397,10 +459,61 @@ function App() {
     setNodo("");
   };
 
+  const handleTreeSearch = (name) => {
+    let tree = GetSavedTree(name);
+
+    console.log("Arbol almacenado obtenido", tree);
+
+    if (tree !== null) {
+      setListData(tree);
+      GetNodes(tree, []);
+      //setListNode([])
+    }
+  };
+
+  const SaveModel = () => {
+    console.log("se guardara el siguiente modelo " + modeloName, listData);
+    SaveNewTree(modeloName, listData);
+  };
+
+  const NewModel = () => {
+    setListData([]);
+    setListNode([]);
+    setlistValue([]);
+    setKeyValue("");
+    setContentValue("");
+    setModeloName("");
+    setNodo("");
+    console.log("se creara un nuevo modelo");
+    //SaveNewTree(modeloName, listData);
+  };
+
   return (
     <div className="App">
-      E-Charts
-      <div style={{ width: 300 }}>
+      <div
+        style={{
+          width: 500,
+          justifyContent: "center",
+          alignContent: "center",
+          marginBlock: 20,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <DropdownList
+          dataSource={listAvailableTrees}
+          fields={{ value: "id", text: "label" }}
+          bsTextbox={true}
+          allowFiltering={true}
+          operator="StartsWith"
+          filterBy="label"
+          placeholder="Árboles disponibles"
+          filterBarPlaceholder="Buscar"
+          change={(data) => handleTreeSearch(data.value)}
+        />
+
+        <h4>Agregar nodos</h4>
+
         <TextBox
           placeholder="Nombre del nodo"
           value={nodo}
@@ -409,64 +522,110 @@ function App() {
             setNodo(data.target.value);
           }}
         />
-        <h4>Ingrese el contenido</h4>
-        <TextBox
-          placeholder="Campo del contenido"
-          value={keyValue}
-          bsTextbox={true}
-          onChange={(data) => {
-            setKeyValue(data.target.value);
-          }}
-        />
-        <TextBox
-          placeholder="Campo del contenido"
-          value={contentValue}
-          bsTextbox={true}
-          onChange={(data) => {
-            setContentValue(data.target.value);
-          }}
-        />
-        <button
-          onClick={() => {
-            handleListValue();
+
+        <h5>Ingrese información del nodo</h5>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          Agregar contenido
-        </button>
+          <TextBox
+            placeholder="Campo"
+            style={{ marginInline: 5 }}
+            value={keyValue}
+            bsTextbox={true}
+            onChange={(data) => {
+              setKeyValue(data.target.value);
+            }}
+          />
+          <TextBox
+            placeholder="Información detallada"
+            style={{ marginInline: 5 }}
+            value={contentValue}
+            bsTextbox={true}
+            onChange={(data) => {
+              setContentValue(data.target.value);
+            }}
+          />
+          <Button
+            textButton="Add. info"
+            variantType="outline"
+            variantName="success"
+            width={100}
+            style={{ marginBlock: 20, marginInline: 10 }}
+            onClick={() => {
+              handleListValue();
+            }}
+          />
+        </div>
 
         {listNode.length > 0 && (
-          <div style={{ marginBlock: 20, width: 300 }}>
-            <DropdownList
-              dataSource={listNode}
-              fields={{ value: "id", text: "label" }}
-              bsTextbox={true}
-              allowFiltering={true}
-              operator="StartsWith"
-              filterBy="label"
-              placeholder="Nodo Previo"
-              filterBarPlaceholder="Buscar"
-              change={(data) => setPrevNodo(data.value)}
-            />
-          </div>
+          <DropdownList
+            dataSource={listNode}
+            fields={{ value: "id", text: "label" }}
+            bsTextbox={true}
+            allowFiltering={true}
+            operator="StartsWith"
+            filterBy="label"
+            placeholder="Nodo Previo"
+            filterBarPlaceholder="Buscar"
+            change={(data) => setPrevNodo(data.value)}
+          />
         )}
 
-        <button
+        <Button
+          textButton="Agregar Nodo"
+          variantType="outline"
+          variantName="primary"
+          style={{ marginBlock: 20 }}
           onClick={() => {
             handleListData();
           }}
-        >
-          Agregar nodo
-        </button>
+        />
+
+        <TextBox
+          placeholder="Nombre del modelo"
+          value={modeloName}
+          bsTextbox={true}
+          onChange={(data) => {
+            setModeloName(data.target.value);
+          }}
+        />
+
+        <Button
+          textButton="Guardar Modelo"
+          variantType="outline"
+          variantName="primary"
+          style={{ marginBlock: 20 }}
+          onClick={() => {
+            SaveModel();
+          }}
+        />
+
+        <Button
+          textButton="Nuevo Modelo"
+          variantType="outline"
+          variantName="info"
+          style={{ marginBlock: 20 }}
+          onClick={() => {
+            NewModel();
+          }}
+        />
       </div>
+
       <p>
         Lista content:
         {listValue.length}
       </p>
-      <p>
+      {/* <p>
         Lista Data:
         {JSON.stringify(listData)}
-      </p>
-      <div id="main"></div>
+      </p> */}
+      {listData.length > 0 && <div id="main"></div>}
     </div>
   );
 }

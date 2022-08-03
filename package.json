@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@bsoftsolution/base-ui.ui.button": "^0.0.17",
     "@bsoftsolution/base-ui.ui.drop-down-list": "^0.0.12",
     "@bsoftsolution/base-ui.ui.textbox": "^0.0.34",
     "@syncfusion/ej2-react-buttons": "^20.2.38",
