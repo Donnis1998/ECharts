@@ -14,6 +14,7 @@ import { TreeOptions } from "./helpers/echart-tree";
 function App() {
   const [prevNodo, setPrevNodo] = useState("");
   const [currentModel, setCurrentModel] = useState("");
+  const [currentNode, setCurrentNode] = useState("");
   const [modeloName, setModeloName] = useState("");
   const [nodo, setNodo] = useState("");
   const [keyValue, setKeyValue] = useState("");
@@ -143,6 +144,16 @@ function App() {
     });
   };
 
+  const DeleteNode = () => {
+    let res = window.confirm(
+      `se eliminara el nodo ${currentNode}, esta seguro?`
+    );
+    if (res) {
+      //realizar funcion recursiva para eliminar nodo
+      window.alert(`El nodo ${currentNode} se ha eliminado correctamente`);
+    }
+  };
+
   /* Handle Models in Database */
   const GetModelList = async () => {
     let list = await GetModels();
@@ -152,6 +163,18 @@ function App() {
   const SaveModel = async () => {
     let data = {
       name: modeloName,
+      chart: listData,
+    };
+
+    CreateModels(data).then(() => {
+      NewModel();
+      GetModelList();
+    });
+  };
+
+  const UpdateModel = async () => {
+    let data = {
+      name: currentModel,
       chart: listData,
     };
 
@@ -307,18 +330,43 @@ function App() {
         </p>
 
         {listNode.length > 0 && (
-          <DropdownList
-            dataSource={listNode}
-            fields={{ value: "id", text: "label" }}
-            bsTextbox={true}
-            variant="success"
-            allowFiltering={true}
-            operator="StartsWith"
-            filterBy="label"
-            placeholder="Nodo Previo"
-            filterBarPlaceholder="Buscar"
-            change={(data) => setPrevNodo(data.value)}
-          />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <DropdownList
+              dataSource={listNode}
+              fields={{ value: "id", text: "label" }}
+              bsTextbox={true}
+              variant="success"
+              allowFiltering={true}
+              operator="StartsWith"
+              filterBy="label"
+              placeholder="Nodo Previo"
+              filterBarPlaceholder="Buscar"
+              change={(data) => {
+                setPrevNodo(data.value);
+                setCurrentNode(data.value);
+              }}
+            />
+
+            <Button
+              textButton="Eliminar Nodo"
+              variantType="outline"
+              variantName="danger"
+              disabled={
+                currentModel === "" || currentModel === null ? true : false
+              }
+              width={100}
+              style={{ marginBlock: 20, marginInline: 10 }}
+              onClick={() => {
+                DeleteNode();
+              }}
+            />
+          </div>
         )}
 
         <Button
@@ -350,7 +398,7 @@ function App() {
         />
 
         <Button
-          textButton="Guardar Modelo"
+          textButton="Guardar como Nuevo Modelo"
           variantType="outline"
           variantName="primary"
           disabled={modeloName === "" ? true : false}
@@ -359,6 +407,17 @@ function App() {
             SaveModel();
           }}
         />
+
+        <Button
+          textButton="Guardar cambios del modelo"
+          variantType="outline"
+          variantName="info"
+          style={{ marginBlock: 20 }}
+          onClick={() => {
+            UpdateModel();
+          }}
+        />
+
         <br />
         <br />
         <Button
@@ -372,10 +431,6 @@ function App() {
         />
       </div>
 
-      {/* <p>
-        Lista Data:
-        {JSON.stringify(listData)}
-      </p> */}
       {listData.length > 0 && <div id="main"></div>}
     </div>
   );
