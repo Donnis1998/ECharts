@@ -10,10 +10,45 @@
 
 .my_tooltip {
   width: 300px;
+  max-height: 350px;
   height: min-content;
-  flex-wrap: wrap;
-  flex-direction: row;
-  background-color: aqua;
+  z-index: 1 !important;
   /* background-color: aqua;
-    color: bisque; */
+   color: bisque; */
+}
+
+.info-content {
+  max-width: 300px;
+  max-height: 200px;
+  background-color: rgb(244, 244, 244);
+  /*overflow-y: scroll;
+  margin-inline: 10px;
+  margin-block: 10px; */
+  padding: 10px;
+}
+
+.list-paragraphs {
+  max-width: 300px;
+  max-height: 200px;
+}
+
+.title {
+  margin-inline: 10px;
+  margin-block: 15px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.subtitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-inline: 10px;
+  margin-bottom: -10px;
+}
+
+.paragraph {
+  font-size: 16px;
+  color: gray;
+  margin-inline: 10px;
+  /* word-break:break-all; */
 }

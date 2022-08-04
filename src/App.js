@@ -12,6 +12,9 @@ import {
 } from "./Controllers/ApiConnection";
 import { TreeOptions } from "./helpers/echart-tree";
 function App() {
+  const [importModel, setImportModel] = useState(false);
+  const [isNewModel, setIsNewModel] = useState(false);
+
   const [prevNodo, setPrevNodo] = useState("");
   const [currentModel, setCurrentModel] = useState("");
   const [currentNode, setCurrentNode] = useState("");
@@ -31,8 +34,8 @@ function App() {
   useEffect(() => {
     if (listData.length !== 0) {
       var myChart = echarts.init(document.getElementById("main"), undefined, {
-        width: 400,
-        height: 400,
+        width: 800,
+        height: 800,
         locale: "EN",
       });
 
@@ -206,10 +209,16 @@ function App() {
     if (currentModel === null || currentModel === "")
       window.alert("Primero debe seleccionar un modelo para eliminarlo.");
 
-    DeleteModels(currentModel).then(() => {
-      GetModelList();
-      NewModel();
-    });
+    let res = window.confirm(
+      `Está seguro de eliminar el modelo ${currentModel}?`
+    );
+
+    if (res) {
+      DeleteModels(currentModel).then(() => {
+        GetModelList();
+        NewModel();
+      });
+    }
   };
 
   /* Aux */
@@ -230,12 +239,37 @@ function App() {
     setContentValue("");
     setModeloName("");
     setNodo("");
+
+    setIsNewModel(false);
+    setImportModel(false);
   };
+
+  var value = [{ about: "testin information" }, { props: "props information" }];
+
+  /* return (
+    <div className="info-content">
+      <p className="title">Hola desde Testing</p>
+      <hr/>
+      {value.map((info) => {
+        return (
+          <div>
+            <p className="subtitle">{Object.keys(info)[0]}</p>
+            <p className="paragraph">
+              {Object.values(info)[0]}Lorem ipsum dolor sit amet, consectetur
+              adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+              dolore magna aliqua.
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  ); */
+
   return (
     <div
       style={{
         display: "flex",
-        justifyContent: "space-around",
+        justifyContent: "flex-start",
         flexWrap: "wrap",
       }}
     >
@@ -247,6 +281,7 @@ function App() {
           marginBlock: 20,
           display: "flex",
           flexDirection: "column",
+          marginInline: 20,
         }}
       >
         <div
@@ -257,199 +292,233 @@ function App() {
             alignItems: "center",
           }}
         >
-          <DropdownList
-            dataSource={listAvailableTrees}
-            fields={{ value: "id", text: "label" }}
-            bsTextbox={true}
-            allowFiltering={true}
-            operator="StartsWith"
-            variant="success"
-            filterBy="label"
-            placeholder="Árboles disponibles"
-            filterBarPlaceholder="Buscar"
-            change={(data) => handleTreeSearch(data.value)}
+          <Button
+            textButton="Nuevo"
+            variantType="outline"
+            variantName="info"
+            style={{ marginBlock: 20 }}
+            onClick={() => {
+              setImportModel(false);
+              setIsNewModel(true);
+              NewModel();
+            }}
           />
 
           <Button
-            textButton="Eliminar modelo"
+            textButton="Importar"
             variantType="outline"
-            variantName="danger"
-            disabled={
-              currentModel === "" || currentModel === null ? true : false
-            }
-            width={100}
-            style={{ marginBlock: 20, marginInline: 10 }}
+            variantName="sucess"
+            style={{ marginBlock: 20 }}
             onClick={() => {
-              DeleteModel();
+              //setImportModel(!importModel);
+              setImportModel(true);
+              setIsNewModel(false);
+            }}
+          />
+
+          <Button
+            textButton="Guardar cambios"
+            variantType="outline"
+            disabled={isNewModel || listData.length === 0 ? true : false}
+            variantName="info"
+            style={{ marginBlock: 20 }}
+            onClick={() => {
+              UpdateModel();
             }}
           />
         </div>
 
-        <br />
-        <br />
+        <hr />
 
-        <h4>Agregar nodos</h4>
+        {importModel === true && isNewModel === false && (
+          <>
+            <p>Seleccione un Modelo</p>
 
-        <TextBox
-          placeholder="Nombre del nodo"
-          variant="success"
-          value={nodo}
-          bsTextbox={true}
-          onChange={(data) => {
-            setNodo(data.value);
-          }}
-        />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <DropdownList
+                dataSource={listAvailableTrees}
+                fields={{ value: "id", text: "label" }}
+                bsTextbox={true}
+                allowFiltering={true}
+                operator="StartsWith"
+                variant="success"
+                filterBy="label"
+                placeholder="Árboles disponibles"
+                filterBarPlaceholder="Buscar"
+                change={(data) => handleTreeSearch(data.value)}
+              />
 
-        <h5>Ingrese información de contenido del nodo</h5>
+              <Button
+                textButton="Eliminar"
+                variantType="outline"
+                variantName="danger"
+                disabled={
+                  currentModel === "" || currentModel === null ? true : false
+                }
+                width={100}
+                style={{ marginBlock: 20, marginInline: 10 }}
+                onClick={() => {
+                  DeleteModel();
+                }}
+              />
+            </div>
+          </>
+        )}
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <TextBox
-            placeholder="Campo"
-            style={{ marginInline: 5 }}
-            variant="success"
-            value={keyValue}
-            bsTextbox={true}
-            onChange={(data) => {
-              setKeyValue(data.value);
-            }}
-          />
-          <TextBox
-            placeholder="Información detallada"
-            style={{ marginInline: 5 }}
-            value={contentValue}
-            variant="success"
-            bsTextbox={true}
-            onChange={(data) => {
-              setContentValue(data.value);
-            }}
-          />
-          <Button
-            textButton="Add. info"
-            variantType="outline"
-            variantName="success"
-            disabled={contentValue === "" || keyValue === "" ? true : false}
-            width={100}
-            style={{ marginBlock: 20, marginInline: 10 }}
-            onClick={() => {
-              handleListValue();
-            }}
-          />
-        </div>
-        <p>
-          Tamaño de la lista de contenido:
-          {listValue.length}
-        </p>
+        {/* {listData.length > 0 && ( */}
+        {(isNewModel || importModel) && (
+          <>
+            <h4>Agregar nodos</h4>
 
-        {listNode.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <DropdownList
-              dataSource={listNode}
-              fields={{ value: "id", text: "label" }}
-              bsTextbox={true}
+            <TextBox
+              placeholder="Nombre del nodo"
               variant="success"
-              allowFiltering={true}
-              operator="StartsWith"
-              filterBy="label"
-              placeholder="Nodo Previo"
-              filterBarPlaceholder="Buscar"
-              change={(data) => {
-                setPrevNodo(data.value);
-                setCurrentNode(data.value);
+              value={nodo}
+              bsTextbox={true}
+              onChange={(data) => {
+                setNodo(data.value);
+              }}
+            />
+
+            <h5>Ingrese información de contenido del nodo</h5>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <TextBox
+                placeholder="Campo"
+                style={{ marginInline: 5 }}
+                variant="success"
+                value={keyValue}
+                bsTextbox={true}
+                onChange={(data) => {
+                  setKeyValue(data.value);
+                }}
+              />
+              <TextBox
+                placeholder="Información detallada"
+                style={{ marginInline: 5 }}
+                value={contentValue}
+                variant="success"
+                bsTextbox={true}
+                onChange={(data) => {
+                  setContentValue(data.value);
+                }}
+              />
+              <Button
+                textButton="Add. info"
+                variantType="outline"
+                variantName="success"
+                disabled={contentValue === "" || keyValue === "" ? true : false}
+                width={100}
+                style={{ marginBlock: 20, marginInline: 10 }}
+                onClick={() => {
+                  handleListValue();
+                }}
+              />
+            </div>
+            <p>
+              Tamaño de la lista de contenido:
+              {listValue.length}
+            </p>
+
+            {listNode.length > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <DropdownList
+                  dataSource={listNode}
+                  fields={{ value: "id", text: "label" }}
+                  bsTextbox={true}
+                  variant="success"
+                  allowFiltering={true}
+                  operator="StartsWith"
+                  filterBy="label"
+                  placeholder="Nodo Previo"
+                  filterBarPlaceholder="Buscar"
+                  change={(data) => {
+                    setPrevNodo(data.value);
+                    setCurrentNode(data.value);
+                  }}
+                />
+
+                <Button
+                  textButton="Eliminar Nodo"
+                  variantType="outline"
+                  variantName="danger"
+                  disabled={
+                    currentModel === "" || currentModel === null ? true : false
+                  }
+                  width={100}
+                  style={{ marginBlock: 20, marginInline: 10 }}
+                  onClick={() => {
+                    DeleteNode();
+                  }}
+                />
+              </div>
+            )}
+
+            <Button
+              textButton="Agregar Nodo"
+              variantType="outline"
+              variantName="primary"
+              disabled={
+                nodo === "" || (listData.length > 0 && prevNodo === "")
+                  ? true
+                  : false
+              }
+              style={{ marginBlock: 20 }}
+              onClick={() => {
+                handleListData();
+              }}
+            />
+
+            <hr />
+
+            <TextBox
+              placeholder="Nombre del modelo"
+              variant="success"
+              value={modeloName}
+              bsTextbox={true}
+              onChange={(data) => {
+                setModeloName(data.value);
               }}
             />
 
             <Button
-              textButton="Eliminar Nodo"
+              textButton="Guardar como Nuevo Modelo"
               variantType="outline"
-              variantName="danger"
-              disabled={
-                currentModel === "" || currentModel === null ? true : false
-              }
-              width={100}
-              style={{ marginBlock: 20, marginInline: 10 }}
+              variantName="primary"
+              disabled={modeloName === "" ? true : false}
+              style={{ marginBlock: 20 }}
               onClick={() => {
-                DeleteNode();
+                SaveModel();
               }}
             />
-          </div>
+          </>
         )}
-
-        <Button
-          textButton="Agregar Nodo"
-          variantType="outline"
-          variantName="primary"
-          disabled={
-            nodo === "" || (listData.length > 0 && prevNodo === "")
-              ? true
-              : false
-          }
-          style={{ marginBlock: 20 }}
-          onClick={() => {
-            handleListData();
-          }}
-        />
-
-        <br />
-        <br />
-
-        <TextBox
-          placeholder="Nombre del modelo"
-          variant="success"
-          value={modeloName}
-          bsTextbox={true}
-          onChange={(data) => {
-            setModeloName(data.value);
-          }}
-        />
-
-        <Button
-          textButton="Guardar como Nuevo Modelo"
-          variantType="outline"
-          variantName="primary"
-          disabled={modeloName === "" ? true : false}
-          style={{ marginBlock: 20 }}
-          onClick={() => {
-            SaveModel();
-          }}
-        />
-
-        <Button
-          textButton="Guardar cambios del modelo"
-          variantType="outline"
-          variantName="info"
-          style={{ marginBlock: 20 }}
-          onClick={() => {
-            UpdateModel();
-          }}
-        />
-
-        <br />
-        <br />
-        <Button
-          textButton="Nuevo Modelo"
-          variantType="outline"
-          variantName="info"
-          style={{ marginBlock: 20 }}
-          onClick={() => {
-            NewModel();
-          }}
-        />
       </div>
-
-      {listData.length > 0 && <div id="main"></div>}
+      {listData.length > 0 && (
+        <div style={{ overflowX: "scroll", flex: 1 }}>
+          <div id="main"></div>
+        </div>
+      )}
     </div>
   );
 }

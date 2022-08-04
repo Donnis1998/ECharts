@@ -25,27 +25,29 @@ export const TreeOptions = (model) => {
     tooltip: {
       show: true,
       trigger: "item", //axis //none
-      triggerOn: "mousemove", //click
+      triggerOn: "click", //click //mousemove
       showContent: true, //false
-      alwaysShowContent: false,
+      //alwaysShowContent: false,
       //showDelay: 100,
       //hideDelay: 100,
-      //zLevel: 2,
+      zLevel: -1,
       //position:[10, 10],
       renderMode: "html", // richText
       //confine: true,
-      ellipsis: "...",
+      //ellipsis: "...",
       textStyle: {
+        overflow: "break",
         //fontWeight: 'bold'
-        with: 100,
-        overflow: "truncate",
-        textBorderColor: "#FF3",
+        //with: 100,
+        //overflow: "truncate",
+        //textBorderColor: "#FF3",
       },
       backgroundColor: "#FFF",
       borderColor: "#000",
       borderWidth: 1,
       //width: 100,
       className: "my_tooltip", //Specify the classes for the tooltip root DOM ,
+      extraCssText: 'box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);',
       position: "right",
       formatter: function (param) {
         return Modal(param);
