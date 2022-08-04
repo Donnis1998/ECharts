@@ -96,6 +96,11 @@ function App() {
   };
 
   const DeleteNode = () => {
+    if (prevNodo === "" || prevNodo === null) {
+      window.alert("Primero debe seleccionar un nodo para eliminarlo.");
+      return;
+    }
+
     let res = window.confirm(
       `Está seguro de eliminar el nodo ${currentNode}, recuerde que también se eliminará todos los hijos contenidos dentro de este nodo.`
     );
@@ -206,8 +211,10 @@ function App() {
   };
 
   const DeleteModel = async () => {
-    if (currentModel === null || currentModel === "")
+    if (currentModel === null || currentModel === "") {
       window.alert("Primero debe seleccionar un modelo para eliminarlo.");
+      return;
+    }
 
     let res = window.confirm(
       `Está seguro de eliminar el modelo ${currentModel}?`
@@ -239,6 +246,7 @@ function App() {
     setContentValue("");
     setModeloName("");
     setNodo("");
+    setPrevNodo("");
 
     /* setIsNewModel(false);
     setImportModel(false); */
@@ -478,11 +486,7 @@ function App() {
               textButton="Agregar Nodo"
               variantType="outline"
               variantName="primary"
-              disabled={
-                nodo === "" || (listData.length > 0 && prevNodo === "")
-                  ? true
-                  : false
-              }
+              disabled={nodo === "" && prevNodo === "" ? true : false}
               style={{ marginBlock: 20 }}
               onClick={() => {
                 handleListData();

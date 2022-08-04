@@ -11,9 +11,7 @@ export const Modal = (params) => {
           `<div>
             <p class="subtitle">${Object.keys(info)[0]}</p>
             <p class="paragraph">
-              ${Object.values(info)[0]}Lorem ipsum dolor sit amet, consectetur
-              adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-              dolore magna aliqua.
+              ${Object.values(info)[0]}
             </p>
           </div>`
         )
