@@ -99,10 +99,10 @@ function App() {
     if (res) {
       let list = [...listData];
       //SearchNode(list, currentNode).then(() => setListData(list));
+      setListNode([]);
       SearchNode(list, currentNode);
       setListData(list);
       GetNodes(list, []).then(() => {
-        console.log("Nuevos nodos", auxNodes);
         setListNode(auxNodes);
       });
       window.alert(`El nodo ${currentNode} se ha eliminado correctamente.`);
