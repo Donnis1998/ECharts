@@ -92,6 +92,23 @@ function App() {
     CleanForm();
   };
 
+  const DeleteNode = () => {
+    let res = window.confirm(
+      `Está seguro de eliminar el nodo ${currentNode}, recuerde que también se eliminará todos los hijos contenidos dentro de este nodo.`
+    );
+    if (res) {
+      let list = [...listData];
+      //SearchNode(list, currentNode).then(() => setListData(list));
+      SearchNode(list, currentNode);
+      setListData(list);
+      GetNodes(list, []).then(() => {
+        console.log("Nuevos nodos", auxNodes);
+        setListNode(auxNodes);
+      });
+      window.alert(`El nodo ${currentNode} se ha eliminado correctamente.`);
+    }
+  };
+
   /* Recursive functions */
   const CheckArray = (arreglo) => {
     let aux = [...arreglo];
@@ -144,14 +161,15 @@ function App() {
     });
   };
 
-  const DeleteNode = () => {
-    let res = window.confirm(
-      `se eliminara el nodo ${currentNode}, esta seguro?`
-    );
-    if (res) {
-      //realizar funcion recursiva para eliminar nodo
-      window.alert(`El nodo ${currentNode} se ha eliminado correctamente`);
-    }
+  const SearchNode = (arreglo, nodeToFind) => {
+    arreglo.map((data, index) => {
+      if (data.name === nodeToFind) {
+        arreglo.splice(index, 1);
+        return 1;
+      } else {
+        return SearchNode(data.children, nodeToFind);
+      }
+    });
   };
 
   /* Handle Models in Database */
