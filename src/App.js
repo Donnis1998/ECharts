@@ -4,17 +4,14 @@ import { useEffect, useState } from "react";
 import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
 import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
 import { Button } from "@bsoftsolution/base-ui.ui.button";
-import axios from "axios";
 import {
-  createNewTree,
-  GetListAvailablesTrees,
-  GetSavedTree,
-  RemoveTree,
-  SaveNewTree,
-  TreesAvailables,
-} from "./data/createJSON";
+  CreateModels,
+  DeleteModels,
+  GetModelByName,
+  GetModels,
+} from "./Controllers/ApiConnection";
+import { TreeOptions } from "./helpers/echart-tree";
 function App() {
-  // initialize the echarts instance
   const [prevNodo, setPrevNodo] = useState("");
   const [currentModel, setCurrentModel] = useState("");
   const [modeloName, setModeloName] = useState("");
@@ -24,8 +21,7 @@ function App() {
   const [listValue, setlistValue] = useState([]);
   const [listData, setListData] = useState([]);
   const [listNode, setListNode] = useState([]);
-
-  const SERVER = "http://localhost:4000"; //backend: https://github.com/Donnis1998/back-echarts
+  const [listAvailableTrees, setListAvailableTrees] = useState([]); //GetListAvailablesTrees()
 
   useEffect(() => {
     GetModelList();
@@ -39,130 +35,10 @@ function App() {
         locale: "EN",
       });
 
-      option && myChart.setOption(option);
+      //option && myChart.setOption(option);
+      myChart.setOption(TreeOptions(listData));
     }
   }, [listData]);
-
-  const [listAvailableTrees, setListAvailableTrees] = useState([]); //GetListAvailablesTrees()
-
-  const customComponent2 = (params) => {
-    const { name, value } = params.data;
-
-    let c = `<div>
-      <h4>Hola desde ${name}</h4>
-      ${value.map((info) => {
-        return `<div><p><span style='font-weight:bold'>${
-          Object.keys(info)[0]
-        }: </span><span>${Object.values(info)[0]}</span></p></div><br/>`;
-      })}
-    </div>`;
-    return c.toString();
-  };
-
-  const option = {
-    title: {
-      id: "1",
-      show: true,
-      text: "BSoft Dependencies",
-      subtext: "All dependencies in bsoft",
-      link: "https://www.youtube.com/", //Este enlace se activará cuando se de click en el titulo
-      target: "blank", //self //blank para abrir en una nueva pestaña
-      left: 100, // '20%' // left // center // right
-      top: 20, // '20%' // left // center // right
-      textStyle: {
-        fontSize: 30,
-        fontStyle: "normal", // italic // oblique
-        fontWeight: "bold", // normal // bolder // lighter // 100, 200, ...
-        //width: 50,
-        //height: 50,
-      },
-      subtextStyle: {
-        fontSize: 20,
-      },
-    },
-    tooltip: {
-      show: true,
-      trigger: "item", //axis //none
-      triggerOn: "mousemove", //click
-      showContent: true, //false
-      alwaysShowContent: false,
-      //showDelay: 100,
-      //hideDelay: 100,
-      //zLevel: 2,
-      //position:[10, 10],
-      renderMode: "html", // richText
-      //confine: true,
-      ellipsis: "...",
-      textStyle: {
-        //fontWeight: 'bold'
-        with: 100,
-        overflow: "truncate",
-        textBorderColor: "#FF3",
-      },
-      backgroundColor: "#FFF",
-      borderColor: "#000",
-      borderWidth: 1,
-      //width: 100,
-      className: "my_tooltip", //Specify the classes for the tooltip root DOM ,
-      position: "right",
-      formatter: function (param) {
-        return customComponent2(param);
-      },
-    },
-    series: [
-      {
-        type: "tree",
-        id: 0,
-        name: "Dependencies",
-        //layout: "radial",
-        data: [listData[0]], //[listData[0]],
-        top: "10%",
-        left: "10%",
-        bottom: "10%",
-        right: "10%",
-        symbolSize: 17,
-        edgeShape: "curve", //curve //polyline
-        edgeForkPosition: "50%",
-        initialTreeDepth: -1, // 2,
-        lineStyle: {
-          width: 2,
-        },
-        label: {
-          backgroundColor: "#fff",
-          position: "left",
-          verticalAlign: "middle",
-          align: "right",
-          //show: false
-          /* normal: {
-            formatter: [
-              "The whole box is a {term|Text Block}, with",
-              "red border and grey background.",
-              "{fragment1|A Text Fragment} {fragment2|Another Text Fragment}",
-              "Text fragments can be customized.",
-            ].join("\n"),
-          }, */
-        },
-        leaves: {
-          label: {
-            position: "right",
-            verticalAlign: "middle",
-            align: "left",
-          },
-        },
-        emphasis: {
-          focus: "descendant",
-        },
-        expandAndCollapse: true,
-        animationDuration: 550,
-        animationDurationUpdate: 750,
-        itemStyle: {
-          color: "red",
-          bordeAnch: 0.5,
-          //borderType: 'dotted'
-        },
-      },
-    ],
-  };
 
   const handleListValue = () => {
     let aux = [...listValue];
@@ -170,92 +46,6 @@ function App() {
     setlistValue(aux);
     setContentValue("");
     setKeyValue("");
-  };
-
-  const CheckArray = (arreglo) => {
-    let aux = [...arreglo];
-
-    arreglo.map((data, index) => {
-      if (data.name === prevNodo) {
-        //console.log(index + ". Encontró " + data.name + " - " + prevNodo);
-
-        aux[index].children.push({
-          name: nodo,
-          value: listValue,
-          collapsed: false,
-          children: [],
-        });
-
-        //SaveNewTree("BSoft", aux);
-        //console.log("lo encontro y lo guardo", aux);
-        return 1;
-      } else {
-        //console.log("entro a la recursion");
-        return CheckArray(data.children);
-      }
-    });
-
-    setListData(aux);
-    setlistValue([]);
-    setNodo("");
-  };
-
-  var auxNodes;
-
-  const GetNodes = async (arreglo, nodes) => {
-    //let aux = [...arreglo];
-    auxNodes = [...nodes];
-    //console.log("nodos que llegan", nodes);
-
-    console.log("Nodes list", listNode);
-
-    //Opcion 1 => funciona un 95% bien
-    /* let array_length = arreglo.length;
-    if (array_length > 0) {
-      arreglo.map((data, index) => {
-        auxNodes.push({ id: data.name, label: data.name });
-        return GetNodes(data.children, auxNodes);
-      });
-    } else {
-      return 1;
-    } */
-
-    //Opcion 2 => testing
-    arreglo.map((data) => {
-      if (data.children.length === 0) {
-        auxNodes.push({ id: data.name, label: data.name });
-        return 1;
-      } else {
-        auxNodes.push({ id: data.name, label: data.name });
-        return GetNodes(data.children, auxNodes);
-      }
-    });
-
-    /* let array_length = aux.length;
-    if (array_length > 0) {
-      aux.map((data, index) => {
-        auxNodes.push({ id: data.name, label: data.name });
-        console.log("nodos agregados", auxNodes);
-
-        return GetNodes(data.children, auxNodes);
-      });
-    } else {
-      //return 1;
-    } */
-
-    /* ---- 
-    aux.map((data, index) => {
-      if (data.name === "" || data.name === undefined || data.name === null) {
-        return 1;
-      } else {
-        auxNodes.push({ id: data.name, label: data.name });
-        console.log("nodos agregado de " + data.name, auxNodes);
-
-        return GetNodes(data.children, auxNodes);
-      }
-    });*/
-
-    //setListNode(aux);
   };
 
   const handleListData = () => {
@@ -289,60 +79,74 @@ function App() {
 
       CheckArray(aux);
     }
+  };
 
-    return;
-    //functional
-    if (listData.length === 0) {
-      aux.push({ name: nodo, value: listValue, collapsed: true, children: [] });
-      //Como es el primer nodo en registrarse, se envia directanebte a a lista de nodos previos, para que pueda ser seleccionado en futuras ocaciones
-      setListNode([{ id: nodo, label: nodo }]);
-    } else {
-      aux.map((val, index) => {
-        console.log(val.name + " - " + prevNodo);
-        if (val.name === prevNodo) {
-          aux[index].children.push({
-            name: nodo,
-            value: listValue,
-            collapsed: true,
-            children: [],
-          });
-        }
-      });
+  const handleTreeSearch = async (name) => {
+    setCurrentModel(name);
+    let model = await GetModelByName(name);
+    setListData(model);
+    GetNodes(model, []).then(() => {
+      setListNode(auxNodes);
+    });
+    CleanForm();
+  };
 
-      let aux_nodes = [...listNode];
-      aux_nodes.push({ id: nodo, label: nodo });
-      setListNode(aux_nodes);
-    }
+  /* Recursive functions */
+  const CheckArray = (arreglo) => {
+    let aux = [...arreglo];
+
+    arreglo.map((data, index) => {
+      if (data.name === prevNodo) {
+        aux[index].children.push({
+          name: nodo,
+          value: listValue,
+          collapsed: false,
+          children: [],
+        });
+
+        return 1;
+      } else {
+        return CheckArray(data.children);
+      }
+    });
 
     setListData(aux);
     setlistValue([]);
     setNodo("");
   };
 
-  const handleTreeSearch = async (name) => {
-    let res = await axios.get(`${SERVER}/${name}`);
+  var auxNodes;
 
-    if (res.status === 200) {
-      setListData(res.data);
-      GetNodes(res.data, []).then(() => {
-        setListNode(auxNodes);
+  const GetNodes = async (arreglo, nodes) => {
+    auxNodes = [...nodes];
+
+    //Opcion 1 => funciona un 100% bien
+    /* let array_length = arreglo.length;
+    if (array_length > 0) {
+      arreglo.map((data, index) => {
+        auxNodes.push({ id: data.name, label: data.name });
+        return GetNodes(data.children, auxNodes);
       });
-      CleanForm();
     } else {
-      window.alert(`Ha ocurrido un error al obtener el modelo ${name}`);
-    }
+      return 1;
+    } */
 
-    setCurrentModel(name);
+    //Opcion 2 => funciona 100% bien
+    arreglo.map((data) => {
+      if (data.children.length === 0) {
+        auxNodes.push({ id: data.name, label: data.name });
+        return 1;
+      } else {
+        auxNodes.push({ id: data.name, label: data.name });
+        return GetNodes(data.children, auxNodes);
+      }
+    });
+  };
 
-    return;
-    /* Utilizando LocalStorage */
-    let tree = GetSavedTree(name);
-    if (tree !== null) {
-      setListData(tree);
-      GetNodes(tree, []);
-      setCurrentModel(name);
-      //setListNode([])
-    }
+  /* Handle Models in Database */
+  const GetModelList = async () => {
+    let list = await GetModels();
+    setListAvailableTrees(list);
   };
 
   const SaveModel = async () => {
@@ -351,67 +155,23 @@ function App() {
       chart: listData,
     };
 
-    let res = await axios.post(`${SERVER}/register`, data);
-
-    if (res.status === 204) {
+    CreateModels(data).then(() => {
       NewModel();
       GetModelList();
-      window.alert("El modelo se ha guardado exitosamente.");
-    } else {
-      window.alert("Ha ocurrido un error al guardar el modelo.");
-    }
-
-    return;
-    /* Utilizando LocalStorage */
-    console.log("se guardara el siguiente modelo " + modeloName, listData);
-    SaveNewTree(modeloName, listData);
-    NewModel();
-    let trees = GetListAvailablesTrees();
-    setListAvailableTrees(trees);
+    });
   };
 
   const DeleteModel = async () => {
-    if (currentModel === null)
+    if (currentModel === null || currentModel === "")
       window.alert("Primero debe seleccionar un modelo para eliminarlo.");
 
-    let res = await axios.delete(`${SERVER}/delete/${currentModel}`);
-
-    if (res.status === 204) {
-      NewModel();
+    DeleteModels(currentModel).then(() => {
       GetModelList();
-    } else {
-      window.alert("Ha ocurrido un error al eliminar el modelo.");
-    }
-
-    return;
-    /* Utilziando localstorage */
-    RemoveTree(currentModel);
-    NewModel();
-    let trees = GetListAvailablesTrees();
-    setListAvailableTrees(trees);
+      NewModel();
+    });
   };
 
-  const NewModel = () => {
-    //setListAvailableTrees([])
-    setListData([]);
-    setListNode([]);
-    setlistValue([]);
-    setKeyValue("");
-    setContentValue("");
-    setModeloName("");
-    setNodo("");
-  };
-
-  const GetModelList = async () => {
-    let res = await axios.get(`${SERVER}/`);
-
-    if (res.status === 200) {
-      setListAvailableTrees(res.data);
-    } else {
-      window.alert("Ha ocurrido un error al obtener la lista de modelos.");
-    }
-  };
-
+  /* Aux */
   const CleanForm = () => {
     setListNode([]);
     setlistValue([]);
@@ -421,6 +181,15 @@ function App() {
     setNodo("");
   };
 
+  const NewModel = () => {
+    setListData([]);
+    setListNode([]);
+    setlistValue([]);
+    setKeyValue("");
+    setContentValue("");
+    setModeloName("");
+    setNodo("");
+  };
   return (
     <div
       style={{
