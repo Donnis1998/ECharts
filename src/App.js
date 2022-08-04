@@ -240,8 +240,8 @@ function App() {
     setModeloName("");
     setNodo("");
 
-    setIsNewModel(false);
-    setImportModel(false);
+    /* setIsNewModel(false);
+    setImportModel(false); */
   };
 
   var value = [{ about: "testin information" }, { props: "props information" }];
