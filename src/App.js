@@ -23,13 +23,9 @@ function App() {
   const [contentValue, setContentValue] = useState("");
   const [listValue, setlistValue] = useState([]);
   const [listData, setListData] = useState([]);
-  const [listNode, setListNode] = useState([
-    /* { id: "bsoft", label: "bsoft" },
-    { id: "bsoft.risk", label: "bsoft.risk" }, */
-  ]);
+  const [listNode, setListNode] = useState([]);
 
-  const SERVER = "http://localhost:4000";
-  //backend: https://github.com/Donnis1998/back-echarts
+  const SERVER = "http://localhost:4000"; //backend: https://github.com/Donnis1998/back-echarts
 
   useEffect(() => {
     GetModelList();
@@ -38,7 +34,7 @@ function App() {
   useEffect(() => {
     if (listData.length !== 0) {
       var myChart = echarts.init(document.getElementById("main"), undefined, {
-        width: 1000,
+        width: 400,
         height: 400,
         locale: "EN",
       });
@@ -191,7 +187,7 @@ function App() {
         });
 
         //SaveNewTree("BSoft", aux);
-        console.log("lo encontro y lo guardo", aux);
+        //console.log("lo encontro y lo guardo", aux);
         return 1;
       } else {
         //console.log("entro a la recursion");
@@ -204,22 +200,36 @@ function App() {
     setNodo("");
   };
 
-  const GetNodes = (arreglo, nodes) => {
-    let aux = [...arreglo];
-    let auxNodes = [...nodes];
-    console.log("nodos que llegan", nodes);
+  var auxNodes;
 
-    //funciona un 90% bien
-    let array_length = aux.length;
+  const GetNodes = async (arreglo, nodes) => {
+    //let aux = [...arreglo];
+    auxNodes = [...nodes];
+    //console.log("nodos que llegan", nodes);
+
+    console.log("Nodes list", listNode);
+
+    //Opcion 1 => funciona un 95% bien
+    /* let array_length = arreglo.length;
     if (array_length > 0) {
       arreglo.map((data, index) => {
         auxNodes.push({ id: data.name, label: data.name });
-        console.log("nodos agregado de " + data.name, auxNodes);
         return GetNodes(data.children, auxNodes);
       });
     } else {
       return 1;
-    }
+    } */
+
+    //Opcion 2 => testing
+    arreglo.map((data) => {
+      if (data.children.length === 0) {
+        auxNodes.push({ id: data.name, label: data.name });
+        return 1;
+      } else {
+        auxNodes.push({ id: data.name, label: data.name });
+        return GetNodes(data.children, auxNodes);
+      }
+    });
 
     /* let array_length = aux.length;
     if (array_length > 0) {
@@ -265,10 +275,19 @@ function App() {
       setlistValue([]);
       setNodo("");
     } else {
-      CheckArray(aux);
       let aux_nodes = [...listNode];
-      aux_nodes.push({ id: nodo, label: nodo });
-      setListNode(aux_nodes);
+      let nodeExist = listNode.filter((data) => data.id === nodo).length;
+      if (nodeExist > 0) {
+        window.alert(
+          "Espere, ya existe un nodo con el mismo nombre, intente con otro nombre por favor."
+        );
+        return;
+      } else {
+        aux_nodes.push({ id: nodo, label: nodo });
+        setListNode(aux_nodes);
+      }
+
+      CheckArray(aux);
     }
 
     return;
@@ -305,6 +324,10 @@ function App() {
 
     if (res.status === 200) {
       setListData(res.data);
+      GetNodes(res.data, []).then(() => {
+        setListNode(auxNodes);
+      });
+      CleanForm();
     } else {
       window.alert(`Ha ocurrido un error al obtener el modelo ${name}`);
     }
@@ -388,8 +411,24 @@ function App() {
       window.alert("Ha ocurrido un error al obtener la lista de modelos.");
     }
   };
+
+  const CleanForm = () => {
+    setListNode([]);
+    setlistValue([]);
+    setKeyValue("");
+    setContentValue("");
+    setModeloName("");
+    setNodo("");
+  };
+
   return (
-    <div style={{ display: "flex", justifyContent: "space-around" }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-around",
+        flexWrap: "wrap",
+      }}
+    >
       <div
         style={{
           width: 400,
@@ -517,7 +556,11 @@ function App() {
           textButton="Agregar Nodo"
           variantType="outline"
           variantName="primary"
-          disabled={nodo === "" ? true : false}
+          disabled={
+            nodo === "" || (listData.length > 0 && prevNodo === "")
+              ? true
+              : false
+          }
           style={{ marginBlock: 20 }}
           onClick={() => {
             handleListData();
