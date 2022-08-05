@@ -337,7 +337,7 @@ function App() {
       <div
         style={{
           width: 400,
-          justifyContent: "center",
+          //justifyContent: "center",
           alignContent: "center",
           marginBlock: 20,
           display: "flex",
