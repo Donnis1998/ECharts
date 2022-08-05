@@ -27,6 +27,7 @@ export const TreeOptions = (model) => {
       trigger: "item", //axis //none
       triggerOn: "click", //click //mousemove
       showContent: true, //false
+      padding: 0,
       //alwaysShowContent: false,
       //showDelay: 100,
       //hideDelay: 100,
@@ -36,9 +37,9 @@ export const TreeOptions = (model) => {
       //confine: true,
       //ellipsis: "...",
       textStyle: {
-        overflow: "break",
+        //width: 30,
+        //overflow: "break",
         //fontWeight: 'bold'
-        //with: 100,
         //overflow: "truncate",
         //textBorderColor: "#FF3",
       },

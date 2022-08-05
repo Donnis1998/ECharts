@@ -14,6 +14,7 @@ import { TreeOptions } from "./helpers/echart-tree";
 function App() {
   const [importModel, setImportModel] = useState(false);
   const [isNewModel, setIsNewModel] = useState(false);
+  const [isUpdatingNode, setIsUpdatingNode] = useState(false);
 
   const [prevNodo, setPrevNodo] = useState("");
   const [currentModel, setCurrentModel] = useState("");
@@ -22,6 +23,8 @@ function App() {
   const [nodo, setNodo] = useState("");
   const [keyValue, setKeyValue] = useState("");
   const [contentValue, setContentValue] = useState("");
+  const [indexContent, setIndexContent] = useState(0);
+
   const [listValue, setlistValue] = useState([]);
   const [listData, setListData] = useState([]);
   const [listNode, setListNode] = useState([]);
@@ -50,6 +53,13 @@ function App() {
     setlistValue(aux);
     setContentValue("");
     setKeyValue("");
+  };
+
+  const UpdateNode = () => {
+    window.alert(`se actualizara el parrafo  ${indexContent}`);
+    let list = [...listData];
+    SearchNodeUpdate(list, currentNode);
+    setListData(list);
   };
 
   const handleListData = () => {
@@ -87,12 +97,12 @@ function App() {
 
   const handleTreeSearch = async (name) => {
     setCurrentModel(name);
+    CleanForm();
     let model = await GetModelByName(name);
     setListData(model);
     GetNodes(model, []).then(() => {
       setListNode(auxNodes);
     });
-    CleanForm();
   };
 
   const DeleteNode = () => {
@@ -160,10 +170,10 @@ function App() {
     //Opcion 2 => funciona 100% bien
     arreglo.map((data) => {
       if (data.children.length === 0) {
-        auxNodes.push({ id: data.name, label: data.name });
+        auxNodes.push({ id: data.name, label: data.name, value: data.value });
         return 1;
       } else {
-        auxNodes.push({ id: data.name, label: data.name });
+        auxNodes.push({ id: data.name, label: data.name, value: data.value });
         return GetNodes(data.children, auxNodes);
       }
     });
@@ -176,6 +186,18 @@ function App() {
         return 1;
       } else {
         return SearchNode(data.children, nodeToFind);
+      }
+    });
+  };
+
+  const SearchNodeUpdate = (arreglo, nodeToFind) => {
+    arreglo.map((data, index) => {
+      if (data.name === nodeToFind) {
+        data.value[indexContent] = { test: "testing..." };
+        console.log('actualizado',data)
+        return 1;
+      } else {
+        return SearchNodeUpdate(data.children, nodeToFind);
       }
     });
   };
@@ -230,12 +252,13 @@ function App() {
 
   /* Aux */
   const CleanForm = () => {
-    setListNode([]);
+    setModeloName("");
     setlistValue([]);
     setKeyValue("");
     setContentValue("");
-    setModeloName("");
+    setListNode([]);
     setNodo("");
+    setPrevNodo(null);
   };
 
   const NewModel = () => {
@@ -315,7 +338,7 @@ function App() {
           <Button
             textButton="Importar"
             variantType="outline"
-            variantName="sucess"
+            variantName="success"
             style={{ marginBlock: 20 }}
             onClick={() => {
               //setImportModel(!importModel);
@@ -336,11 +359,42 @@ function App() {
           />
         </div>
 
+        {(isNewModel || importModel) && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <TextBox
+              placeholder="Nombre del modelo"
+              variant="success"
+              value={modeloName}
+              bsTextbox={true}
+              onChange={(data) => {
+                setModeloName(data.value);
+              }}
+            />
+
+            <Button
+              textButton="Guardar como Nuevo Modelo"
+              variantType="outline"
+              variantName="primary"
+              disabled={modeloName === "" ? true : false}
+              style={{ marginLeft: 10 }}
+              onClick={() => {
+                SaveModel();
+              }}
+            />
+          </div>
+        )}
+
         <hr />
 
         {importModel === true && isNewModel === false && (
           <>
-            <p>Seleccione un Modelo</p>
+            <h4>Seleccione un Modelo</h4>
 
             <div
               style={{
@@ -386,7 +440,7 @@ function App() {
             <h4>Agregar nodos</h4>
 
             <TextBox
-              placeholder="Nombre del nodo"
+              placeholder="Nombre del nuevo nodo"
               variant="success"
               value={nodo}
               bsTextbox={true}
@@ -394,53 +448,6 @@ function App() {
                 setNodo(data.value);
               }}
             />
-
-            <h5>Ingrese información de contenido del nodo</h5>
-
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <TextBox
-                placeholder="Campo"
-                style={{ marginInline: 5 }}
-                variant="success"
-                value={keyValue}
-                bsTextbox={true}
-                onChange={(data) => {
-                  setKeyValue(data.value);
-                }}
-              />
-              <TextBox
-                placeholder="Información detallada"
-                style={{ marginInline: 5 }}
-                value={contentValue}
-                variant="success"
-                bsTextbox={true}
-                onChange={(data) => {
-                  setContentValue(data.value);
-                }}
-              />
-              <Button
-                textButton="Add. info"
-                variantType="outline"
-                variantName="success"
-                disabled={contentValue === "" || keyValue === "" ? true : false}
-                width={100}
-                style={{ marginBlock: 20, marginInline: 10 }}
-                onClick={() => {
-                  handleListValue();
-                }}
-              />
-            </div>
-            <p>
-              Tamaño de la lista de contenido:
-              {listValue.length}
-            </p>
 
             {listNode.length > 0 && (
               <div
@@ -458,66 +465,144 @@ function App() {
                   allowFiltering={true}
                   operator="StartsWith"
                   filterBy="label"
-                  placeholder="Nodo Previo"
+                  placeholder="Seleccione el nodo previo"
                   filterBarPlaceholder="Buscar"
                   change={(data) => {
+                    setlistValue(data.itemData.value);
+                    console.log("info de este nodo", data.itemData.value);
                     setPrevNodo(data.value);
                     setCurrentNode(data.value);
                   }}
                 />
 
-                <Button
-                  textButton="Eliminar Nodo"
-                  variantType="outline"
-                  variantName="danger"
-                  disabled={
-                    currentModel === "" || currentModel === null ? true : false
-                  }
-                  width={100}
-                  style={{ marginBlock: 20, marginInline: 10 }}
-                  onClick={() => {
-                    DeleteNode();
-                  }}
-                />
+                <div style={{ marginTop: 10 }}>
+                  <Button
+                    textButton="Actualizar Nodo"
+                    variantType="outline"
+                    variantName="info"
+                    disabled={
+                      currentNode === "" || currentNode === null ? true : false
+                    }
+                    width={100}
+                    style={{ marginBottom: 5, marginLeft: 10 }}
+                    onClick={() => {
+                      setIsUpdatingNode(true);
+                      //DeleteNode();
+                    }}
+                  />
+
+                  <Button
+                    textButton="Eliminar Nodo"
+                    variantType="outline"
+                    variantName="danger"
+                    disabled={
+                      currentNode === "" || currentNode === null ? true : false
+                    }
+                    width={100}
+                    style={{ marginLeft: 10 }}
+                    onClick={() => {
+                      DeleteNode();
+                    }}
+                  />
+                </div>
               </div>
             )}
+
+            {isUpdatingNode && (
+              <>
+                <h5>Click sobre el párrafo a editar</h5>
+                <div>
+                  {listValue.map((info, index) => {
+                    return (
+                      <div
+                        className="node-card"
+                        onClick={() => {
+                          setContentValue(Object.values(info)[0]);
+                          setKeyValue(Object.keys(info)[0]);
+                          setIndexContent(index);
+                        }}
+                      >
+                        <p className="node-subtitle">{Object.keys(info)[0]}</p>
+                        <p className="node-paragraph">
+                          {Object.values(info)[0]}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+            <h5>Ingrese información de contenido del nodo</h5>
+
+            <div>
+              <TextBox
+                placeholder="Título"
+                style={{ marginInline: 5 }}
+                variant="success"
+                value={keyValue}
+                bsTextbox={true}
+                onChange={(data) => {
+                  setKeyValue(data.value);
+                }}
+              />
+              <TextBox
+                placeholder="Descripción"
+                enableMultiline={true}
+                enableClearButton={true}
+                multiLineRow={5}
+                style={{ marginInline: 5, marginTop: 5 }}
+                value={contentValue}
+                variant="success"
+                bsTextbox={true}
+                onChange={(data) => {
+                  setContentValue(data.value);
+                }}
+              />
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "flex-start",
+                }}
+              >
+                <Button
+                  textButton={!isUpdatingNode ? "Add. Info" : "Actualizar info"} //"Add. info"
+                  variantType="outline"
+                  variantName="success"
+                  disabled={
+                    contentValue === "" || keyValue === "" ? true : false
+                  }
+                  width={100}
+                  style={{ marginBlock: 10, marginRight: 15 }}
+                  onClick={() => {
+                    !isUpdatingNode ? handleListValue() : UpdateNode();
+                  }}
+                />
+                <p>Tamaño de contenido: {listValue.length}</p>
+              </div>
+            </div>
 
             <Button
               textButton="Agregar Nodo"
               variantType="outline"
               variantName="primary"
-              disabled={nodo === "" && prevNodo === "" ? true : false}
+              disabled={
+                (listData.length <= 0 && nodo === "") ||
+                (listData.length > 0 &&
+                  (prevNodo === "" || prevNodo === null || nodo === ""))
+                  ? true
+                  : false
+              }
+              //disabled={ nodo === "" || prevNodo === "" ? true : false}
               style={{ marginBlock: 20 }}
               onClick={() => {
                 handleListData();
               }}
             />
-
-            <hr />
-
-            <TextBox
-              placeholder="Nombre del modelo"
-              variant="success"
-              value={modeloName}
-              bsTextbox={true}
-              onChange={(data) => {
-                setModeloName(data.value);
-              }}
-            />
-
-            <Button
-              textButton="Guardar como Nuevo Modelo"
-              variantType="outline"
-              variantName="primary"
-              disabled={modeloName === "" ? true : false}
-              style={{ marginBlock: 20 }}
-              onClick={() => {
-                SaveModel();
-              }}
-            />
           </>
         )}
       </div>
+
       {listData.length > 0 && (
         <div style={{ overflowX: "scroll", flex: 1 }}>
           <div id="main"></div>
