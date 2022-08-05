@@ -363,6 +363,7 @@ function App() {
               onClick={() => {
                 setImportModel(false);
                 setIsNewModel(true);
+                setIsUpdatingNode(false);
                 NewModel();
               }}
             />
@@ -485,23 +486,25 @@ function App() {
                   alignItems: "center",
                 }}
               >
-                <p> Modo edición</p>
-                <Switch
-                  checked={isUpdatingNode}
-                  //disabled={listData.length === 0 ? true : false}
-                  //onLabel="enabled"
-                  //offLabel="disabled"
-                  change={() => {
-                    setIsUpdatingNode(!isUpdatingNode);
-                    setlistValue([]);
-                    setKeyValue("");
-                    setContentValue("");
-                    setIndexContent("");
-                    setCurrentNode("")
-                    setPrevNodo("")
-                    //CleanForm()
-                  }}
-                />
+                {listData.length > 0 && (
+                  <>
+                    <p> Modo edición</p>
+                    <Switch
+                      checked={isUpdatingNode}
+                      //disabled={listData.length <= 0 ? true : false}
+                      //disabled={listData.length === 0 ? true : false}
+                      change={() => {
+                        setIsUpdatingNode(!isUpdatingNode);
+                        setlistValue([]);
+                        setKeyValue("");
+                        setContentValue("");
+                        setIndexContent("");
+                        setCurrentNode("");
+                        setPrevNodo("");
+                      }}
+                    />
+                  </>
+                )}
               </div>
             </div>
 
