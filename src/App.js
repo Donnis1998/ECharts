@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
 import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
 import { Button } from "@bsoftsolution/base-ui.ui.button";
+import "@bsoftsolution/bsoft-utils.assets.iconography";
+import { Switch } from "@bsoftsolution/base-ui.ui.switch";
 import {
   CreateModels,
   DeleteModels,
@@ -15,6 +17,8 @@ function App() {
   const [importModel, setImportModel] = useState(false);
   const [isNewModel, setIsNewModel] = useState(false);
   const [isUpdatingNode, setIsUpdatingNode] = useState(false);
+  const [showNodeForm, setShowNodeForm] = useState(false);
+  const [isNewContent, setIsNewContent] = useState(false);
 
   const [prevNodo, setPrevNodo] = useState("");
   const [currentModel, setCurrentModel] = useState("");
@@ -55,11 +59,15 @@ function App() {
     setKeyValue("");
   };
 
-  const UpdateNode = () => {
-    window.alert(`se actualizara el parrafo  ${indexContent}`);
+  const UpdateNode = (mode, index = 0) => {
     let list = [...listData];
-    SearchNodeUpdate(list, currentNode);
+    SearchNodeUpdate(list, currentNode, mode, index);
     setListData(list);
+    setIsNewContent(false);
+    setShowNodeForm(false);
+    setContentValue("");
+    setKeyValue("");
+    setIndexContent("");
   };
 
   const handleListData = () => {
@@ -74,7 +82,7 @@ function App() {
         children: [],
       });
       //Como es el primer nodo en registrarse, se envia directanebte a a lista de nodos previos, para que pueda ser seleccionado en futuras ocaciones
-      setListNode([{ id: nodo, label: nodo }]);
+      setListNode([{ id: nodo, label: nodo, value: listValue }]);
       setListData(aux);
       setlistValue([]);
       setNodo("");
@@ -87,7 +95,7 @@ function App() {
         );
         return;
       } else {
-        aux_nodes.push({ id: nodo, label: nodo });
+        aux_nodes.push({ id: nodo, label: nodo, value: listValue });
         setListNode(aux_nodes);
       }
 
@@ -123,6 +131,11 @@ function App() {
       GetNodes(list, []).then(() => {
         setListNode(auxNodes);
       });
+      setlistValue([]);
+      setContentValue("");
+      setKeyValue("");
+      setCurrentNode("");
+      setPrevNodo("");
       window.alert(`El nodo ${currentNode} se ha eliminado correctamente.`);
     }
   };
@@ -190,14 +203,24 @@ function App() {
     });
   };
 
-  const SearchNodeUpdate = (arreglo, nodeToFind) => {
-    arreglo.map((data, index) => {
+  const SearchNodeUpdate = (arreglo, nodeToFind, mode, index) => {
+    arreglo.map((data) => {
       if (data.name === nodeToFind) {
-        data.value[indexContent] = { test: "testing..." };
-        console.log('actualizado',data)
+        if (mode === "add") {
+          data.value.push({ [keyValue]: contentValue });
+        }
+
+        if (mode === "update") {
+          data.value[indexContent] = { [keyValue]: contentValue };
+        }
+
+        if (mode === "delete") {
+          data.value.splice(index, 1);
+        }
+
         return 1;
       } else {
-        return SearchNodeUpdate(data.children, nodeToFind);
+        return SearchNodeUpdate(data.children, nodeToFind, mode, index);
       }
     });
   };
@@ -230,6 +253,12 @@ function App() {
       NewModel();
       GetModelList();
     });
+  };
+
+  const SetModeNodoEdition = () => {
+    setShowNodeForm(false);
+    setIsUpdatingNode(false);
+    setIsNewContent(false);
   };
 
   const DeleteModel = async () => {
@@ -304,6 +333,7 @@ function App() {
         flexWrap: "wrap",
       }}
     >
+      {/* Formulario General */}
       <div
         style={{
           width: 400,
@@ -315,81 +345,84 @@ function App() {
           marginInline: 20,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Button
-            textButton="Nuevo"
-            variantType="outline"
-            variantName="info"
-            style={{ marginBlock: 20 }}
-            onClick={() => {
-              setImportModel(false);
-              setIsNewModel(true);
-              NewModel();
-            }}
-          />
-
-          <Button
-            textButton="Importar"
-            variantType="outline"
-            variantName="success"
-            style={{ marginBlock: 20 }}
-            onClick={() => {
-              //setImportModel(!importModel);
-              setImportModel(true);
-              setIsNewModel(false);
-            }}
-          />
-
-          <Button
-            textButton="Guardar cambios"
-            variantType="outline"
-            disabled={isNewModel || listData.length === 0 ? true : false}
-            variantName="info"
-            style={{ marginBlock: 20 }}
-            onClick={() => {
-              UpdateModel();
-            }}
-          />
-        </div>
-
-        {(isNewModel || importModel) && (
+        {/* Barra de botones */}
+        <>
           <div
             style={{
               display: "flex",
+              flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
             }}
           >
-            <TextBox
-              placeholder="Nombre del modelo"
-              variant="success"
-              value={modeloName}
-              bsTextbox={true}
-              onChange={(data) => {
-                setModeloName(data.value);
+            <Button
+              textButton="Nuevo"
+              variantType="outline"
+              variantName="info"
+              style={{ marginBlock: 20 }}
+              onClick={() => {
+                setImportModel(false);
+                setIsNewModel(true);
+                NewModel();
               }}
             />
 
             <Button
-              textButton="Guardar como Nuevo Modelo"
+              textButton="Importar"
               variantType="outline"
-              variantName="primary"
-              disabled={modeloName === "" ? true : false}
-              style={{ marginLeft: 10 }}
+              variantName="success"
+              style={{ marginBlock: 20 }}
               onClick={() => {
-                SaveModel();
+                //setImportModel(!importModel);
+                setImportModel(true);
+                setIsNewModel(false);
+                NewModel();
+              }}
+            />
+
+            <Button
+              textButton="Guardar cambios"
+              variantType="outline"
+              disabled={isNewModel || listData.length === 0 ? true : false}
+              variantName="info"
+              style={{ marginBlock: 20 }}
+              onClick={() => {
+                UpdateModel();
               }}
             />
           </div>
-        )}
 
+          {(isNewModel || importModel) && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <TextBox
+                placeholder="Nombre del modelo"
+                variant="success"
+                value={modeloName}
+                bsTextbox={true}
+                onChange={(data) => {
+                  setModeloName(data.value);
+                }}
+              />
+
+              <Button
+                textButton="Guardar como Nuevo Modelo"
+                variantType="outline"
+                variantName="primary"
+                disabled={modeloName === "" ? true : false}
+                style={{ marginLeft: 10 }}
+                onClick={() => {
+                  SaveModel();
+                }}
+              />
+            </div>
+          )}
+        </>
         <hr />
 
         {importModel === true && isNewModel === false && (
@@ -434,20 +467,55 @@ function App() {
           </>
         )}
 
-        {/* {listData.length > 0 && ( */}
         {(isNewModel || importModel) && (
           <>
-            <h4>Agregar nodos</h4>
-
-            <TextBox
-              placeholder="Nombre del nuevo nodo"
-              variant="success"
-              value={nodo}
-              bsTextbox={true}
-              onChange={(data) => {
-                setNodo(data.value);
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
-            />
+            >
+              <h4>Nodos del Modelo</h4>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <p> Modo edición</p>
+                <Switch
+                  checked={isUpdatingNode}
+                  //disabled={listData.length === 0 ? true : false}
+                  //onLabel="enabled"
+                  //offLabel="disabled"
+                  change={() => {
+                    setIsUpdatingNode(!isUpdatingNode);
+                    setlistValue([]);
+                    setKeyValue("");
+                    setContentValue("");
+                    setIndexContent("");
+                    setCurrentNode("")
+                    setPrevNodo("")
+                    //CleanForm()
+                  }}
+                />
+              </div>
+            </div>
+
+            {isUpdatingNode === false && (
+              <TextBox
+                placeholder="Nombre del nuevo nodo"
+                variant="success"
+                value={nodo}
+                bsTextbox={true}
+                onChange={(data) => {
+                  setNodo(data.value);
+                }}
+              />
+            )}
 
             {listNode.length > 0 && (
               <div
@@ -468,15 +536,23 @@ function App() {
                   placeholder="Seleccione el nodo previo"
                   filterBarPlaceholder="Buscar"
                   change={(data) => {
-                    setlistValue(data.itemData.value);
-                    console.log("info de este nodo", data.itemData.value);
-                    setPrevNodo(data.value);
-                    setCurrentNode(data.value);
+                    if (!isUpdatingNode) {
+                      setPrevNodo(data.value);
+                      setCurrentNode(data.value);
+                    } else {
+                      setPrevNodo(data.value);
+                      setCurrentNode(data.value);
+                      setlistValue(data.itemData.value);
+                      setContentValue("");
+                      setKeyValue("");
+                      setShowNodeForm(false);
+                    }
                   }}
                 />
 
-                <div style={{ marginTop: 10 }}>
-                  <Button
+                {isUpdatingNode && (
+                  <div>
+                    {/* <Button
                     textButton="Actualizar Nodo"
                     variantType="outline"
                     variantName="info"
@@ -487,42 +563,90 @@ function App() {
                     style={{ marginBottom: 5, marginLeft: 10 }}
                     onClick={() => {
                       setIsUpdatingNode(true);
+
                       //DeleteNode();
                     }}
-                  />
+                  /> */}
 
-                  <Button
-                    textButton="Eliminar Nodo"
-                    variantType="outline"
-                    variantName="danger"
-                    disabled={
-                      currentNode === "" || currentNode === null ? true : false
-                    }
-                    width={100}
-                    style={{ marginLeft: 10 }}
-                    onClick={() => {
-                      DeleteNode();
-                    }}
-                  />
-                </div>
+                    <Button
+                      textButton="Eliminar Nodo"
+                      variantType="outline"
+                      variantName="danger"
+                      disabled={
+                        currentNode === "" || currentNode === null
+                          ? true
+                          : false
+                      }
+                      width={100}
+                      style={{ marginLeft: 10 }}
+                      onClick={() => {
+                        DeleteNode();
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
             {isUpdatingNode && (
               <>
-                <h5>Click sobre el párrafo a editar</h5>
+                <div
+                  style={{
+                    flexDirection: "row",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <h5>Contenido de este nodo</h5>
+                  <i
+                    style={{ marginInline: 5 }}
+                    className="fa-solid fa-add"
+                    onClick={() => {
+                      if (currentNode === "" || currentNode === null) {
+                        window.alert("Seleccione un nodo primero");
+                      } else {
+                        setShowNodeForm(true);
+                        setIsNewContent(true);
+                      }
+                    }}
+                  />
+                </div>
                 <div>
                   {listValue.map((info, index) => {
                     return (
-                      <div
-                        className="node-card"
-                        onClick={() => {
-                          setContentValue(Object.values(info)[0]);
-                          setKeyValue(Object.keys(info)[0]);
-                          setIndexContent(index);
-                        }}
-                      >
-                        <p className="node-subtitle">{Object.keys(info)[0]}</p>
+                      <div className="node-card">
+                        <div
+                          style={{
+                            flexDirection: "row",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <p className="node-subtitle">
+                            {Object.keys(info)[0]}
+                          </p>
+                          <div>
+                            <i
+                              style={{ marginInline: 5 }}
+                              className="fa-solid fa-edit"
+                              onClick={() => {
+                                setContentValue(Object.values(info)[0]);
+                                setKeyValue(Object.keys(info)[0]);
+                                setIndexContent(index);
+                                setShowNodeForm(true);
+                              }}
+                            />
+                            <i
+                              style={{ marginInline: 5 }}
+                              className="fa-solid fa-trash"
+                              onClick={() => {
+                                UpdateNode("delete", index);
+                              }}
+                            />
+                          </div>
+                        </div>
                         <p className="node-paragraph">
                           {Object.values(info)[0]}
                         </p>
@@ -530,79 +654,142 @@ function App() {
                     );
                   })}
                 </div>
+
+                {showNodeForm === true && (
+                  <div>
+                    <p>Inserte el nuevo contenido del nodo</p>
+                    <TextBox
+                      placeholder="Título"
+                      style={{ marginInline: 5 }}
+                      variant="success"
+                      value={keyValue}
+                      bsTextbox={true}
+                      onChange={(data) => {
+                        setKeyValue(data.value);
+                      }}
+                    />
+                    <TextBox
+                      placeholder="Descripción"
+                      enableMultiline={true}
+                      enableClearButton={true}
+                      multiLineRow={5}
+                      style={{ marginInline: 5, marginTop: 5 }}
+                      value={contentValue}
+                      variant="success"
+                      bsTextbox={true}
+                      onChange={(data) => {
+                        setContentValue(data.value);
+                      }}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "flex-start",
+                      }}
+                    >
+                      <Button
+                        textButton={
+                          isNewContent
+                            ? "Guardar nuevo contenido"
+                            : "Actualizar Contenido"
+                        } //"Add. info"
+                        variantType="outline"
+                        variantName="success"
+                        disabled={
+                          contentValue === "" || keyValue === "" ? true : false
+                        }
+                        width={100}
+                        style={{ marginBlock: 10, marginRight: 15 }}
+                        onClick={() => {
+                          isNewContent
+                            ? UpdateNode("add")
+                            : UpdateNode("update");
+                        }}
+                      />
+                      <p>Tamaño de contenido: {listValue.length}</p>
+                    </div>
+                  </div>
+                )}
               </>
             )}
-            <h5>Ingrese información de contenido del nodo</h5>
 
-            <div>
-              <TextBox
-                placeholder="Título"
-                style={{ marginInline: 5 }}
-                variant="success"
-                value={keyValue}
-                bsTextbox={true}
-                onChange={(data) => {
-                  setKeyValue(data.value);
-                }}
-              />
-              <TextBox
-                placeholder="Descripción"
-                enableMultiline={true}
-                enableClearButton={true}
-                multiLineRow={5}
-                style={{ marginInline: 5, marginTop: 5 }}
-                value={contentValue}
-                variant="success"
-                bsTextbox={true}
-                onChange={(data) => {
-                  setContentValue(data.value);
-                }}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "flex-start",
-                }}
-              >
+            {isUpdatingNode === false && (
+              <>
+                <h5>Ingrese información de contenido del nodo</h5>
+
+                <div>
+                  <TextBox
+                    placeholder="Título"
+                    style={{ marginInline: 5 }}
+                    variant="success"
+                    value={keyValue}
+                    bsTextbox={true}
+                    onChange={(data) => {
+                      setKeyValue(data.value);
+                    }}
+                  />
+                  <TextBox
+                    placeholder="Descripción"
+                    enableMultiline={true}
+                    enableClearButton={true}
+                    multiLineRow={5}
+                    style={{ marginInline: 5, marginTop: 5 }}
+                    value={contentValue}
+                    variant="success"
+                    bsTextbox={true}
+                    onChange={(data) => {
+                      setContentValue(data.value);
+                    }}
+                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "flex-start",
+                    }}
+                  >
+                    <Button
+                      textButton="Add. Info" //"Add. info"
+                      variantType="outline"
+                      variantName="success"
+                      disabled={
+                        contentValue === "" || keyValue === "" ? true : false
+                      }
+                      width={100}
+                      style={{ marginBlock: 10, marginRight: 15 }}
+                      onClick={() => {
+                        handleListValue();
+                      }}
+                    />
+                    <p>Tamaño de contenido: {listValue.length}</p>
+                  </div>
+                </div>
+
                 <Button
-                  textButton={!isUpdatingNode ? "Add. Info" : "Actualizar info"} //"Add. info"
+                  textButton="Agregar Nodo"
                   variantType="outline"
-                  variantName="success"
+                  variantName="primary"
                   disabled={
-                    contentValue === "" || keyValue === "" ? true : false
+                    (listData.length <= 0 && nodo === "") ||
+                    (listData.length > 0 &&
+                      (prevNodo === "" || prevNodo === null || nodo === ""))
+                      ? true
+                      : false
                   }
-                  width={100}
-                  style={{ marginBlock: 10, marginRight: 15 }}
+                  //disabled={ nodo === "" || prevNodo === "" ? true : false}
+                  style={{ marginBlock: 20 }}
                   onClick={() => {
-                    !isUpdatingNode ? handleListValue() : UpdateNode();
+                    handleListData();
                   }}
                 />
-                <p>Tamaño de contenido: {listValue.length}</p>
-              </div>
-            </div>
-
-            <Button
-              textButton="Agregar Nodo"
-              variantType="outline"
-              variantName="primary"
-              disabled={
-                (listData.length <= 0 && nodo === "") ||
-                (listData.length > 0 &&
-                  (prevNodo === "" || prevNodo === null || nodo === ""))
-                  ? true
-                  : false
-              }
-              //disabled={ nodo === "" || prevNodo === "" ? true : false}
-              style={{ marginBlock: 20 }}
-              onClick={() => {
-                handleListData();
-              }}
-            />
+              </>
+            )}
           </>
         )}
       </div>
 
+      {/* Vista del Echart */}
       {listData.length > 0 && (
         <div style={{ overflowX: "scroll", flex: 1 }}>
           <div id="main"></div>

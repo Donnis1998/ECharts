@@ -58,6 +58,7 @@
   height: min-content;
   background-color: rgb(244, 244, 244);
   padding: 1px;
+  margin-block: 10px;
 }
 
 .node-subtitle {
