@@ -218,11 +218,26 @@ function App() {
           data.value.splice(index, 1);
         }
 
+        if (mode === "change") {
+          data.name = nodo;
+        }
         return 1;
       } else {
         return SearchNodeUpdate(data.children, nodeToFind, mode, index);
       }
     });
+  };
+
+  const CambiarNombreNodo = () => {
+    let list = [...listData];
+    SearchNodeUpdate(list, currentNode, "change", 0);
+    setListData(list);
+    GetNodes(list, []).then(() => {
+      setListNode(auxNodes);
+    });
+    setCurrentNode("")
+    setPrevNodo("")
+    setNodo("");
   };
 
   /* Handle Models in Database */
@@ -323,7 +338,7 @@ function App() {
         );
       })}
     </div>
-  ); */
+  );  */
 
   return (
     <div
@@ -591,8 +606,39 @@ function App() {
               </div>
             )}
 
+            {/* {isUpdatingNode && (prevNodo !== "" || prevNodo != null) && ( */}
             {isUpdatingNode && (
               <>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <TextBox
+                    placeholder="Nuevo nombre del nodo"
+                    variant="success"
+                    value={nodo}
+                    bsTextbox={true}
+                    onChange={(data) => {
+                      setNodo(data.value);
+                    }}
+                  />
+
+                  <Button
+                    textButton={"Cambiar Nombre"} //"Add. info"
+                    disabled={nodo === "" || currentNode == "" ? true : false}
+                    variantType="outline"
+                    variantName="success"
+                    style={{ marginLeft: 10 }}
+                    onClick={() => {
+                      CambiarNombreNodo();
+                    }}
+                  />
+                </div>
+
                 <div
                   style={{
                     flexDirection: "row",

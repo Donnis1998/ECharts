@@ -21,8 +21,8 @@
   max-width: 300px;
   max-height: 200px;
   background-color: rgb(244, 244, 244);
-  /*overflow-y: scroll;
-  margin-inline: 10px;
+  overflow-y: scroll;
+  /*margin-inline: 10px;
   margin-block: 10px; */
   padding: 10px;
 }
