@@ -1,10 +1,10 @@
 import "./App.css";
+import "@bsoftsolution/bsoft-utils.assets.iconography";
 import * as echarts from "echarts";
 import { useEffect, useState } from "react";
 import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
 import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
 import { Button } from "@bsoftsolution/base-ui.ui.button";
-import "@bsoftsolution/bsoft-utils.assets.iconography";
 import { Switch } from "@bsoftsolution/base-ui.ui.switch";
 import {
   CreateModels,
@@ -14,25 +14,30 @@ import {
 } from "./Controllers/ApiConnection";
 import { TreeOptions } from "./helpers/echart-tree";
 function App() {
+  /* Auxiliares */
   const [importModel, setImportModel] = useState(false);
   const [isNewModel, setIsNewModel] = useState(false);
   const [isUpdatingNode, setIsUpdatingNode] = useState(false);
   const [showNodeForm, setShowNodeForm] = useState(false);
   const [isNewContent, setIsNewContent] = useState(false);
+  const [listAvailableTrees, setListAvailableTrees] = useState([]);
 
-  const [prevNodo, setPrevNodo] = useState("");
+  /* Modelo */
   const [currentModel, setCurrentModel] = useState("");
-  const [currentNode, setCurrentNode] = useState("");
   const [modeloName, setModeloName] = useState("");
+  const [listData, setListData] = useState([]);
+
+  /* Nodos */
   const [nodo, setNodo] = useState("");
+  const [prevNodo, setPrevNodo] = useState("");
+  const [currentNode, setCurrentNode] = useState("");
+  const [listNode, setListNode] = useState([]);
+
+  /* Contenido de cada nodo */
+  const [indexContent, setIndexContent] = useState(0);
   const [keyValue, setKeyValue] = useState("");
   const [contentValue, setContentValue] = useState("");
-  const [indexContent, setIndexContent] = useState(0);
-
   const [listValue, setlistValue] = useState([]);
-  const [listData, setListData] = useState([]);
-  const [listNode, setListNode] = useState([]);
-  const [listAvailableTrees, setListAvailableTrees] = useState([]); //GetListAvailablesTrees()
 
   useEffect(() => {
     GetModelList();
@@ -51,12 +56,28 @@ function App() {
     }
   }, [listData]);
 
+  /**
+   *
+   * @description Agrega contenido a un nodo específico mediante una lista de objetos, la misma que será consumida en la función: handleListData
+   */
   const handleListValue = () => {
     let aux = [...listValue];
     aux.push({ [keyValue]: contentValue });
     setlistValue(aux);
+    CleanNodeContentForm();
+    //setContentValue("");
+    //setKeyValue("");
+  };
+
+  /* Limpiadores */
+  const CleanNodeContentForm = () => {
     setContentValue("");
     setKeyValue("");
+  };
+
+  const CleanModelForm = () => {
+    setNodo("");
+    setlistValue([]);
   };
 
   const UpdateNode = (mode, index = 0) => {
@@ -70,10 +91,13 @@ function App() {
     setIndexContent("");
   };
 
+  /**
+   *
+   * @description Agrega un nodo y todo su contenido al modelo, también genera una lista de todos los nodos que el usuario podrá utilizar luego para ir aninando el modelo
+   */
   const handleListData = () => {
     let aux = [...listData];
 
-    //testing -- passed --> la funciion con recursividad funciona bien
     if (listData.length === 0) {
       aux.push({
         name: nodo,
@@ -81,13 +105,15 @@ function App() {
         collapsed: false,
         children: [],
       });
-      //Como es el primer nodo en registrarse, se envia directanebte a a lista de nodos previos, para que pueda ser seleccionado en futuras ocaciones
+      //Como es el primer nodo en registrarse, se envia directamente a lista de nodos previos, para que pueda ser seleccionado al ingresar futuras nodos.
       setListNode([{ id: nodo, label: nodo, value: listValue }]);
       setListData(aux);
-      setlistValue([]);
-      setNodo("");
+      CleanModelForm();
+      //setlistValue([]);
+      //setNodo("");
     } else {
       let aux_nodes = [...listNode];
+
       let nodeExist = listNode.filter((data) => data.id === nodo).length;
       if (nodeExist > 0) {
         window.alert(
@@ -235,12 +261,17 @@ function App() {
     GetNodes(list, []).then(() => {
       setListNode(auxNodes);
     });
-    setCurrentNode("")
-    setPrevNodo("")
+    setCurrentNode("");
+    setPrevNodo("");
     setNodo("");
   };
 
   /* Handle Models in Database */
+
+  /**
+   *
+   *  @description Obtiene la lista de Modelos disponibles desde el servidor
+   */
   const GetModelList = async () => {
     let list = await GetModels();
     setListAvailableTrees(list);
@@ -268,12 +299,6 @@ function App() {
       NewModel();
       GetModelList();
     });
-  };
-
-  const SetModeNodoEdition = () => {
-    setShowNodeForm(false);
-    setIsUpdatingNode(false);
-    setIsNewContent(false);
   };
 
   const DeleteModel = async () => {
@@ -628,7 +653,7 @@ function App() {
                   />
 
                   <Button
-                    textButton={"Cambiar Nombre"} //"Add. info"
+                    textButton={"Cambiar Nombre"}
                     disabled={nodo === "" || currentNode == "" ? true : false}
                     variantType="outline"
                     variantName="success"
@@ -742,7 +767,7 @@ function App() {
                           isNewContent
                             ? "Guardar nuevo contenido"
                             : "Actualizar Contenido"
-                        } //"Add. info"
+                        }
                         variantType="outline"
                         variantName="success"
                         disabled={
@@ -799,7 +824,7 @@ function App() {
                     }}
                   >
                     <Button
-                      textButton="Add. Info" //"Add. info"
+                      textButton="Add. Info"
                       variantType="outline"
                       variantName="success"
                       disabled={
