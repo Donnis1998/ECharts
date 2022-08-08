@@ -1,7 +1,7 @@
 import "./App.css";
 import "@bsoftsolution/bsoft-utils.assets.iconography";
 import * as echarts from "echarts";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
 import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
 import { Button } from "@bsoftsolution/base-ui.ui.button";
@@ -43,16 +43,27 @@ function App() {
     GetModelList();
   }, []);
 
+  var myChart;
+  //var eChartId;
+
   useEffect(() => {
     if (listData.length !== 0) {
-      var myChart = echarts.init(document.getElementById("main"), undefined, {
+      myChart = echarts.init(document.getElementById("main"), undefined, {
         width: 800,
         height: 800,
         locale: "EN",
       });
 
+      //eChartId = myChart.id;
       //option && myChart.setOption(option);
       myChart.setOption(TreeOptions(listData));
+
+      myChart.on("click", function (params) {
+        console.log("hizo click");
+        document
+          .querySelector(".my_tooltip")
+          .style.removeProperty("pointer-events");
+      });
     }
   }, [listData]);
 
@@ -346,7 +357,7 @@ function App() {
 
   var value = [{ about: "testin information" }, { props: "props information" }];
 
-  /* return (
+  /*return (
     <div className="info-content">
       <p className="title">Hola desde Testing</p>
       <hr/>
@@ -354,16 +365,20 @@ function App() {
         return (
           <div>
             <p className="subtitle">{Object.keys(info)[0]}</p>
-            <p className="paragraph">
+            <div className="paragraph">
               {Object.values(info)[0]}Lorem ipsum dolor sit amet, consectetur
               adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+              dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur
+              adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+              dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur
+              adipiscing elit, sed do eiusmod tempor incididunt ut labore et
               dolore magna aliqua.
-            </p>
+            </div>
           </div>
         );
       })}
     </div>
-  );  */
+  ); */
 
   return (
     <div
@@ -866,7 +881,10 @@ function App() {
       {/* Vista del Echart */}
       {listData.length > 0 && (
         <div style={{ overflowX: "scroll", flex: 1 }}>
-          <div id="main"></div>
+          <div
+            style={{ position: "relative", backgroundColor: "antiquewhite" }}
+            id="main"
+          ></div>
         </div>
       )}
     </div>

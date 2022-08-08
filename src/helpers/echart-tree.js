@@ -28,7 +28,7 @@ export const TreeOptions = (model) => {
       triggerOn: "click", //click //mousemove
       showContent: true, //false
       padding: 0,
-      //alwaysShowContent: false,
+      alwaysShowContent: true,
       //showDelay: 100,
       //hideDelay: 100,
       zLevel: -1,
@@ -48,7 +48,7 @@ export const TreeOptions = (model) => {
       borderWidth: 1,
       //width: 100,
       className: "my_tooltip", //Specify the classes for the tooltip root DOM ,
-      extraCssText: 'box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);',
+      //extraCssText: 'word-break: break-all',
       position: "right",
       formatter: function (param) {
         return Modal(param);
