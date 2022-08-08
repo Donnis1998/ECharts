@@ -12,7 +12,8 @@
   width: 300px;
   max-height: 350px;
   overflow-y: scroll;
-  word-break: break-all;
+  word-break: keep-all;
+  text-align: justify;
 }
 
 .info-content {
