@@ -47,9 +47,9 @@ export const TreeOptions = (model) => {
       borderColor: "#000",
       borderWidth: 1,
       //width: 100,
-      className: "my_tooltip", //Specify the classes for the tooltip root DOM ,
+      className: "my_tooltip contenedor", //Specify the classes for the tooltip root DOM ,
       //extraCssText: 'word-break: break-all',
-      position: "right",
+      position: "bottom",
       formatter: function (param) {
         return Modal(param);
         //return customComponent2(param);

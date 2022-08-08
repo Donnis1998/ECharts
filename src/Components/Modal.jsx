@@ -3,37 +3,24 @@ export const Modal = (params) => {
   const { name, value } = params.data;
 
   window.handleModalVisibility = () => {
-    //window.alert('cerrar modal')
     document.querySelector(".my_tooltip").style.display = "none";
-    /* echart_ref.dispatchAction({
-      type: 'hideTip'
-  }) */
   };
+
   let a = `<div class="info-content">
       <div class="headerTooltip">
         <p class="title">${name}</p>
-        <span style="margin-right:20px" class="fa-solid fa-x" onClick={handleModalVisibility()} ></span>
+        <i style="margin-right:20px, color:cadetblue" class="fa-solid fa-x" onClick={handleModalVisibility()} ></i>
       </div>
       <hr/>
       ${value.map((info) => {
         return `<div class="text_content">
             <p class="subtitle">${Object.keys(info)[0]}</p>
-            <p class="paragraph">
-              ${Object.values(info)[0]}
-            </p>
+            <div class="paragraph">
+             <p>${Object.values(info)[0]}</p>
+            </div>
           </div>`;
       })}
     </div>`;
 
-  let c = `<div>
-      <h4 className='text_content'>Hola desde ${name}</h4>
-      ${value.map((info) => {
-        return `<div className='text_content'><p><span style='font-weight:bold'>${
-          Object.keys(info)[0]
-        }: </span><span>${
-          Object.values(info)[0]
-        } Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </span></p></div><br/>`;
-      })}
-    </div>`;
-  return a.toString();
+    return a.toString();
 };

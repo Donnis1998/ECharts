@@ -63,6 +63,9 @@ function App() {
         document
           .querySelector(".my_tooltip")
           .style.removeProperty("pointer-events");
+        document
+          .querySelector(".my_tooltip")
+          .style.removeProperty("white-space");
       });
     }
   }, [listData]);
@@ -882,7 +885,7 @@ function App() {
       {listData.length > 0 && (
         <div style={{ overflowX: "scroll", flex: 1 }}>
           <div
-            style={{ position: "relative", backgroundColor: "antiquewhite" }}
+            style={{ position: "relative" }}
             id="main"
           ></div>
         </div>

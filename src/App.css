@@ -10,21 +10,16 @@
 
 .my_tooltip {
   width: 300px;
-  height: 400px;
+  max-height: 350px;
   overflow-y: scroll;
+  word-break: break-all;
 }
 
 .info-content {
-  width: 100%;
+  width: 96%;
   height: 100%;
-  /* max-width: 300px;
-  overflow-y: scroll !important;
-  min-height: 400px; */
   padding: 5px;
-  background-color: rgb(244, 244, 244);
-}
-
-.text_content {
+  /* background-color: rgb(244, 244, 244); */
 }
 
 .list-paragraphs {
@@ -36,6 +31,7 @@
   margin-inline: 10px;
   margin-block: 15px;
   font-size: 20px;
+  color: cadetblue;
   font-weight: bold;
 }
 
@@ -80,4 +76,38 @@
   color: gray;
   margin-inline: 10px;
   word-break: break-all;
+}
+
+
+/* Estilos para Scroll en motores Webkit y blink (Chrome, Safari, Opera... )*/
+.contenedor {
+  margin-bottom: 10px;
+}
+
+
+.contenedor::-webkit-scrollbar {
+  -webkit-appearance: none;
+}
+
+.contenedor::-webkit-scrollbar:vertical {
+  width: 10px;
+}
+
+.contenedor::-webkit-scrollbar-button:increment,
+.contenedor::-webkit-scrollbar-button {
+  display: none;
+}
+
+.contenedor::-webkit-scrollbar:horizontal {
+  height: 10px;
+}
+
+.contenedor::-webkit-scrollbar-thumb {
+  background-color: cadetblue;
+  border-radius: 20px;
+  border: 2px solid #f1f2f3;
+}
+
+.contenedor::-webkit-scrollbar-track {
+  border-radius: 10px;
 }
