@@ -1,11 +1,17 @@
 import "./App.css";
-import "@bsoftsolution/bsoft-utils.assets.iconography";
 import * as echarts from "echarts";
-import { useEffect, useRef, useState } from "react";
-import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
-import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
-import { Button } from "@bsoftsolution/base-ui.ui.button";
-import { Switch } from "@bsoftsolution/base-ui.ui.switch";
+import { useEffect, useState } from "react";
+//import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
+//import { Button } from "@bsoftsolution/base-ui.ui.button";
+//import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
+//import { Switch } from "@bsoftsolution/base-ui.ui.switch";
+
+
+import { SwitchComponent as Switch } from "@syncfusion/ej2-react-buttons";
+import { DropDownListComponent as DropdownList } from '@syncfusion/ej2-react-dropdowns';
+import { ButtonComponent as Button} from '@syncfusion/ej2-react-buttons';
+import { TextBoxComponent as TextBox} from '@syncfusion/ej2-react-inputs';
+
 import {
   CreateModels,
   DeleteModels,
@@ -13,11 +19,12 @@ import {
   GetModels,
 } from "./Controllers/ApiConnection";
 import { TreeOptions } from "./helpers/echart-tree";
+import "@bsoftsolution/bsoft-utils.assets.iconography";
 function App() {
   /* Auxiliares */
   const [importModel, setImportModel] = useState(false);
   const [isNewModel, setIsNewModel] = useState(false);
-  const [isUpdatingNode, setIsUpdatingNode] = useState(false);
+  const [isUpdatingNode, setIsUpdatingNode] = useState(true); //false
   const [showNodeForm, setShowNodeForm] = useState(false);
   const [isNewContent, setIsNewContent] = useState(false);
   const [listAvailableTrees, setListAvailableTrees] = useState([]);
@@ -32,6 +39,7 @@ function App() {
   const [prevNodo, setPrevNodo] = useState("");
   const [currentNode, setCurrentNode] = useState("");
   const [listNode, setListNode] = useState([]);
+  const [parentCurrentNode, setParentCurrentNode] = useState("");
 
   /* Contenido de cada nodo */
   const [indexContent, setIndexContent] = useState(0);
@@ -147,6 +155,7 @@ function App() {
     setCurrentModel(name);
     CleanForm();
     let model = await GetModelByName(name);
+    console.log("model", model);
     setListData(model);
     GetNodes(model, []).then(() => {
       setListNode(auxNodes);
@@ -243,8 +252,9 @@ function App() {
     });
   };
 
-  const SearchNodeUpdate = (arreglo, nodeToFind, mode, index) => {
-    arreglo.map((data) => {
+  var foundNode;
+  const SearchNodeUpdate = (arreglo, nodeToFind, mode, index = 0) => {
+    arreglo.map((data, i) => {
       if (data.name === nodeToFind) {
         if (mode === "add") {
           data.value.push({ [keyValue]: contentValue });
@@ -261,6 +271,16 @@ function App() {
         if (mode === "change") {
           data.name = nodo;
         }
+
+        if (mode === "get") {
+          foundNode = data;
+        }
+
+        if (mode === "get_delete") {
+          foundNode = data;
+          arreglo.splice(i, 1);
+        }
+
         return 1;
       } else {
         return SearchNodeUpdate(data.children, nodeToFind, mode, index);
@@ -279,7 +299,27 @@ function App() {
     setPrevNodo("");
     setNodo("");
   };
+  const CambiarPadeDelNodo = () => {
+    window.alert(
+      `El nuevo padre del nodo ${currentNode} sera ${parentCurrentNode}`
+    );
 
+    let list = [...listData];
+    SearchNodeUpdate(list, currentNode, "get_delete");
+    ChangeParentNode(list, parentCurrentNode, foundNode);
+    setListData(list);
+  };
+
+  const ChangeParentNode = (arreglo, nodeParentToFind, nodeInfo) => {
+    arreglo.map((data) => {
+      if (data.name === nodeParentToFind) {
+        data.children.push(nodeInfo);
+        return 1;
+      } else {
+        return ChangeParentNode(data.children, nodeParentToFind, nodeInfo);
+      }
+    });
+  };
   /* Handle Models in Database */
 
   /**
@@ -547,7 +587,7 @@ function App() {
                 {listData.length > 0 && (
                   <>
                     <p> Modo edición</p>
-                    <Switch
+                    {/* <Switch
                       checked={isUpdatingNode}
                       //disabled={listData.length <= 0 ? true : false}
                       //disabled={listData.length === 0 ? true : false}
@@ -560,7 +600,7 @@ function App() {
                         setCurrentNode("");
                         setPrevNodo("");
                       }}
-                    />
+                    /> */}
                   </>
                 )}
               </div>
@@ -613,22 +653,6 @@ function App() {
 
                 {isUpdatingNode && (
                   <div>
-                    {/* <Button
-                    textButton="Actualizar Nodo"
-                    variantType="outline"
-                    variantName="info"
-                    disabled={
-                      currentNode === "" || currentNode === null ? true : false
-                    }
-                    width={100}
-                    style={{ marginBottom: 5, marginLeft: 10 }}
-                    onClick={() => {
-                      setIsUpdatingNode(true);
-
-                      //DeleteNode();
-                    }}
-                  /> */}
-
                     <Button
                       textButton="Eliminar Nodo"
                       variantType="outline"
@@ -678,6 +702,45 @@ function App() {
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       CambiarNombreNodo();
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <DropdownList
+                    dataSource={listNode}
+                    fields={{ value: "id", text: "label" }}
+                    bsTextbox={true}
+                    variant="success"
+                    allowFiltering={true}
+                    operator="StartsWith"
+                    filterBy="label"
+                    placeholder="Seleccione el nuevo padre"
+                    filterBarPlaceholder="Buscar"
+                    change={(data) => {
+                      setParentCurrentNode(data.value);
+                    }}
+                  />
+
+                  <Button
+                    textButton={"Cambiar Padre"}
+                    disabled={
+                      parentCurrentNode === "" || currentNode == ""
+                        ? true
+                        : false
+                    }
+                    variantType="outline"
+                    variantName="success"
+                    style={{ marginLeft: 10 }}
+                    onClick={() => {
+                      CambiarPadeDelNodo();
                     }}
                   />
                 </div>
@@ -884,10 +947,7 @@ function App() {
       {/* Vista del Echart */}
       {listData.length > 0 && (
         <div style={{ overflowX: "scroll", flex: 1 }}>
-          <div
-            style={{ position: "relative" }}
-            id="main"
-          ></div>
+          <div style={{ position: "relative" }} id="main"></div>
         </div>
       )}
     </div>
