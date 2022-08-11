@@ -1,10 +1,6 @@
 import "./App.css";
 import * as echarts from "echarts";
 import { useEffect, useState } from "react";
-/* import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
-import { Button } from "@bsoftsolution/base-ui.ui.button";
-import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
-import { Switch } from "@bsoftsolution/base-ui.ui.switch"; */
 import {
   ButtonComponent as Button,
   SwitchComponent as Switch,
@@ -19,7 +15,7 @@ import {
   GetModels,
 } from "./Controllers/ApiConnection";
 import { TreeOptions } from "./helpers/echart-tree";
-import "@bsoftsolution/bsoft-utils.assets.iconography";
+
 function App() {
   /* Auxiliares */
   const [importModel, setImportModel] = useState(false);
@@ -40,6 +36,7 @@ function App() {
   const [currentNode, setCurrentNode] = useState("");
   const [listNode, setListNode] = useState([]);
   const [parentCurrentNode, setParentCurrentNode] = useState("");
+  const [possibleParentsNodes, setPossibleParentsNodes] = useState([]);
 
   /* Contenido de cada nodo */
   const [indexContent, setIndexContent] = useState(0);
@@ -156,11 +153,13 @@ function App() {
     setCurrentModel(name);
     CleanForm();
     let model = await GetModelByName(name);
-    console.log("model", model);
+    //console.log("model", model);
     setListData(model);
     GetNodes(model, []).then(() => {
       setListNode(auxNodes);
     });
+
+    //console.log("los nodos en lista son lo siguientes", auxNodes);
   };
 
   const DeleteNode = () => {
@@ -413,6 +412,48 @@ function App() {
     setImportModel(false); */
   };
 
+  const SearchPossibleParentsNodes = (currentNode) => {
+    BuscarHijosDeNodo(listData, currentNode);
+    GetNodes([hijosDeNodo], []);
+    let posiblesNodosPadres = ObtenerNuevosPosiblesNodosPadres(auxNodes);
+    console.log('posibles nodos padres',posiblesNodosPadres)
+    setPossibleParentsNodes(posiblesNodosPadres);
+  };
+
+  var hijosDeNodo;
+  const BuscarHijosDeNodo = (arreglo, nodeToFind) => {
+    arreglo.map((data, i) => {
+      if (data.name === nodeToFind) {
+        hijosDeNodo = data;
+        return 1;
+      } else {
+        return BuscarHijosDeNodo(data.children, nodeToFind);
+      }
+    });
+  };
+
+  const ObtenerNuevosPosiblesNodosPadres = (nodosNoPadres) => {
+    var index_list_for_remove = [];
+    var nuevosNodos = [];
+
+    nodosNoPadres.map((data) => {
+      let index = listNode.findIndex((item) => item.id === data.id);
+      index_list_for_remove.push(index);
+    });
+
+    index_list_for_remove.map((index) => {
+      if (index !== -1) listNode.splice(index, 1, 0);
+    });
+
+    listNode.map((data) => {
+      if (typeof data !== "number") {
+        nuevosNodos.push(data);
+      }
+    });
+
+    return nuevosNodos;
+  };
+
   var value = [{ about: "testin information" }, { props: "props information" }];
 
   /*return (
@@ -468,22 +509,22 @@ function App() {
             }}
           >
             <Button
-              content="Nuevo"
-              variantType="outline"
-              variantName="info"
-              style={{ marginBlock: 20 }}
+              title="Nuevo"
+              cssClass="e-outline"
+              //style={{ marginBlock: 20 }}
               onClick={() => {
                 setImportModel(false);
                 setIsNewModel(true);
                 setIsUpdatingNode(false);
                 NewModel();
               }}
-            />
+            >
+              Nuevo
+            </Button>
 
             <Button
-              content="Importar"
-              variantType="outline"
-              variantName="success"
+              title="Importar"
+              cssClass="e-outline"
               style={{ marginBlock: 20 }}
               onClick={() => {
                 //setImportModel(!importModel);
@@ -491,18 +532,22 @@ function App() {
                 setIsNewModel(false);
                 NewModel();
               }}
-            />
+            >
+              Importar
+            </Button>
 
             <Button
-              content="Guardar cambios"
-              variantType="outline"
+              title="Guardar cambios"
+              //variantType="outline"
+              //variantName="info"
               disabled={isNewModel || listData.length === 0 ? true : false}
-              variantName="info"
               style={{ marginBlock: 20 }}
               onClick={() => {
                 UpdateModel();
               }}
-            />
+            >
+              Guardar cambios
+            </Button>
           </div>
 
           {(isNewModel || importModel) && (
@@ -515,9 +560,8 @@ function App() {
             >
               <TextBox
                 placeholder="Nombre del modelo"
-                variant="success"
                 value={modeloName}
-                bsTextbox={true}
+                floatLabelType="Auto"
                 onChange={(data) => {
                   setModeloName(data.value);
                 }}
@@ -525,14 +569,16 @@ function App() {
 
               <Button
                 content="Guardar como Nuevo Modelo"
-                variantType="outline"
-                variantName="primary"
+                //variantType="outline"
+                //variantName="primary"
                 disabled={modeloName === "" ? true : false}
                 style={{ marginLeft: 10 }}
                 onClick={() => {
                   SaveModel();
                 }}
-              />
+              >
+                Guardar como Nuevo Modelo
+              </Button>
             </div>
           )}
         </>
@@ -553,29 +599,33 @@ function App() {
               <DropdownList
                 dataSource={listAvailableTrees}
                 fields={{ value: "id", text: "label" }}
-                bsTextbox={true}
-                allowFiltering={true}
-                operator="StartsWith"
-                variant="success"
-                filterBy="label"
+                //bsTextbox={true}
+                //allowFiltering={true}
+                //operator="StartsWith"
+                //variant="success"
+                //filterBy="label"
                 placeholder="Modelos disponibles"
-                filterBarPlaceholder="Buscar"
-                change={(data) => handleTreeSearch(data.value)}
+                //filterBarPlaceholder="Buscar"
+                onChange={(data) => {
+                  handleTreeSearch(data.value);
+                }}
               />
 
               <Button
                 content="Eliminar"
-                variantType="outline"
-                variantName="danger"
+                //variantType="outline"
+                //variantName="danger"
+                //width={100}
                 disabled={
                   currentModel === "" || currentModel === null ? true : false
                 }
-                width={100}
                 style={{ marginBlock: 20, marginInline: 10 }}
                 onClick={() => {
                   DeleteModel();
                 }}
-              />
+              >
+                Eliminar
+              </Button>
             </div>
           </>
         )}
@@ -605,6 +655,7 @@ function App() {
                       checked={isUpdatingNode}
                       //disabled={listData.length <= 0 ? true : false}
                       //disabled={listData.length === 0 ? true : false}
+
                       onChange={() => {
                         console.log(
                           "canbio el estado del switch a ",
@@ -627,9 +678,8 @@ function App() {
             {isUpdatingNode === false && (
               <TextBox
                 placeholder="Nombre del nuevo nodo"
-                variant="success"
+                floatLabelType="Auto"
                 value={nodo}
-                bsTextbox={true}
                 onChange={(data) => {
                   setNodo(data.value);
                 }}
@@ -665,6 +715,7 @@ function App() {
                       setContentValue("");
                       setKeyValue("");
                       setShowNodeForm(false);
+                      SearchPossibleParentsNodes(data.value);
                     }
                   }}
                 />
@@ -673,19 +724,21 @@ function App() {
                   <div>
                     <Button
                       content="Eliminar Nodo"
-                      variantType="outline"
-                      variantName="danger"
+                      //variantType="outline"
+                      //variantName="danger"
+                      //width={100}
                       disabled={
                         currentNode === "" || currentNode === null
                           ? true
                           : false
                       }
-                      width={100}
                       style={{ marginLeft: 10 }}
                       onClick={() => {
                         DeleteNode();
                       }}
-                    />
+                    >
+                      Eliminar Nodo
+                    </Button>
                   </div>
                 )}
               </div>
@@ -704,24 +757,25 @@ function App() {
                 >
                   <TextBox
                     placeholder="Nuevo nombre del nodo"
-                    variant="success"
+                    floatLabelType="Auto"
                     value={nodo}
-                    bsTextbox={true}
                     onChange={(data) => {
                       setNodo(data.value);
                     }}
                   />
 
                   <Button
-                    content={"Cambiar Nombre"}
+                    content="Cambiar Nombre"
                     disabled={nodo === "" || currentNode == "" ? true : false}
-                    variantType="outline"
-                    variantName="success"
+                    //variantType="outline"
+                    //variantName="success"
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       CambiarNombreNodo();
                     }}
-                  />
+                  >
+                    Cambiar Nombre
+                  </Button>
                 </div>
 
                 <div
@@ -733,7 +787,7 @@ function App() {
                   }}
                 >
                   <DropdownList
-                    dataSource={listNode}
+                    dataSource={possibleParentsNodes} //listNode //lista de nodos que pueden ser posibles padres
                     fields={{ value: "id", text: "label" }}
                     bsTextbox={true}
                     variant="success"
@@ -748,19 +802,21 @@ function App() {
                   />
 
                   <Button
-                    content={"Cambiar Padre"}
+                    content="Cambiar Padre"
                     disabled={
                       parentCurrentNode === "" || currentNode == ""
                         ? true
                         : false
                     }
-                    variantType="outline"
-                    variantName="success"
+                    //variantType="outline"
+                    //variantName="success"
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       CambiarPadeDelNodo();
                     }}
-                  />
+                  >
+                    Cambiar Padre
+                  </Button>
                 </div>
 
                 <div
@@ -833,23 +889,23 @@ function App() {
                     <p>Inserte el nuevo contenido del nodo</p>
                     <TextBox
                       placeholder="Título"
+                      floatLabelType="Auto"
                       style={{ marginInline: 5 }}
-                      variant="success"
                       value={keyValue}
-                      bsTextbox={true}
                       onChange={(data) => {
                         setKeyValue(data.value);
                       }}
                     />
                     <TextBox
                       placeholder="Descripción"
-                      enableMultiline={true}
-                      enableClearButton={true}
+                      floatLabelType="Auto"
+                      multiline={true}
+                      showClearButton={true}
                       multiLineRow={5}
                       style={{ marginInline: 5, marginTop: 5 }}
                       value={contentValue}
-                      variant="success"
-                      bsTextbox={true}
+                      //variant="success"
+                      //bsTextbox={true}
                       onChange={(data) => {
                         setContentValue(data.value);
                       }}
@@ -867,12 +923,12 @@ function App() {
                             ? "Guardar nuevo contenido"
                             : "Actualizar Contenido"
                         }
-                        variantType="outline"
-                        variantName="success"
+                        //variantType="outline"
+                        //variantName="success"
                         disabled={
                           contentValue === "" || keyValue === "" ? true : false
                         }
-                        width={100}
+                        //width={100}
                         style={{ marginBlock: 10, marginRight: 15 }}
                         onClick={() => {
                           isNewContent
@@ -894,23 +950,23 @@ function App() {
                 <div>
                   <TextBox
                     placeholder="Título"
+                    floatLabelType="Auto"
                     style={{ marginInline: 5 }}
-                    variant="success"
+                    //variant="success"
                     value={keyValue}
-                    bsTextbox={true}
+                    //bsTextbox={true}
                     onChange={(data) => {
                       setKeyValue(data.value);
                     }}
                   />
                   <TextBox
                     placeholder="Descripción"
-                    enableMultiline={true}
-                    enableClearButton={true}
+                    floatLabelType="Auto"
+                    multiline={true}
+                    showClearButton={true}
                     multiLineRow={5}
                     style={{ marginInline: 5, marginTop: 5 }}
                     value={contentValue}
-                    variant="success"
-                    bsTextbox={true}
                     onChange={(data) => {
                       setContentValue(data.value);
                     }}
@@ -924,25 +980,27 @@ function App() {
                   >
                     <Button
                       content="Add. Info"
-                      variantType="outline"
-                      variantName="success"
+                      //variantType="outline"
+                      //variantName="success"
+                      //width={100}
                       disabled={
                         contentValue === "" || keyValue === "" ? true : false
                       }
-                      width={100}
                       style={{ marginBlock: 10, marginRight: 15 }}
                       onClick={() => {
                         handleListValue();
                       }}
-                    />
+                    >
+                      Add. Info
+                    </Button>
                     <p>Tamaño de contenido: {listValue.length}</p>
                   </div>
                 </div>
 
                 <Button
                   content="Agregar Nodo"
-                  variantType="outline"
-                  variantName="primary"
+                  //variantType="outline"
+                  //variantName="primary"
                   disabled={
                     (listData.length <= 0 && nodo === "") ||
                     (listData.length > 0 &&
@@ -955,7 +1013,9 @@ function App() {
                   onClick={() => {
                     handleListData();
                   }}
-                />
+                >
+                  Agregar Nodo
+                </Button>
               </>
             )}
           </>
