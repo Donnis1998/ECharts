@@ -1,17 +1,16 @@
 import "./App.css";
 import * as echarts from "echarts";
 import { useEffect, useState } from "react";
-import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
+/* import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
 import { Button } from "@bsoftsolution/base-ui.ui.button";
 import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
-import { Switch } from "@bsoftsolution/base-ui.ui.switch";
-
-/* import {
-  ButtonComponent,
-  SwitchComponent,
+import { Switch } from "@bsoftsolution/base-ui.ui.switch"; */
+import {
+  ButtonComponent as Button,
+  SwitchComponent as Switch,
 } from "@syncfusion/ej2-react-buttons";
-import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
-import { TextBoxComponent as TextBox } from "@syncfusion/ej2-react-inputs"; */
+import { DropDownListComponent as DropdownList } from "@syncfusion/ej2-react-dropdowns";
+import { TextBoxComponent as TextBox } from "@syncfusion/ej2-react-inputs";
 
 import {
   CreateModels,
@@ -469,7 +468,7 @@ function App() {
             }}
           >
             <Button
-              textButton="Nuevo"
+              content="Nuevo"
               variantType="outline"
               variantName="info"
               style={{ marginBlock: 20 }}
@@ -482,7 +481,7 @@ function App() {
             />
 
             <Button
-              textButton="Importar"
+              content="Importar"
               variantType="outline"
               variantName="success"
               style={{ marginBlock: 20 }}
@@ -495,7 +494,7 @@ function App() {
             />
 
             <Button
-              textButton="Guardar cambios"
+              content="Guardar cambios"
               variantType="outline"
               disabled={isNewModel || listData.length === 0 ? true : false}
               variantName="info"
@@ -525,7 +524,7 @@ function App() {
               />
 
               <Button
-                textButton="Guardar como Nuevo Modelo"
+                content="Guardar como Nuevo Modelo"
                 variantType="outline"
                 variantName="primary"
                 disabled={modeloName === "" ? true : false}
@@ -565,7 +564,7 @@ function App() {
               />
 
               <Button
-                textButton="Eliminar"
+                content="Eliminar"
                 variantType="outline"
                 variantName="danger"
                 disabled={
@@ -606,7 +605,11 @@ function App() {
                       checked={isUpdatingNode}
                       //disabled={listData.length <= 0 ? true : false}
                       //disabled={listData.length === 0 ? true : false}
-                      change={() => {
+                      onChange={() => {
+                        console.log(
+                          "canbio el estado del switch a ",
+                          !isUpdatingNode
+                        );
                         setIsUpdatingNode(!isUpdatingNode);
                         setlistValue([]);
                         setKeyValue("");
@@ -669,7 +672,7 @@ function App() {
                 {isUpdatingNode && (
                   <div>
                     <Button
-                      textButton="Eliminar Nodo"
+                      content="Eliminar Nodo"
                       variantType="outline"
                       variantName="danger"
                       disabled={
@@ -710,7 +713,7 @@ function App() {
                   />
 
                   <Button
-                    textButton={"Cambiar Nombre"}
+                    content={"Cambiar Nombre"}
                     disabled={nodo === "" || currentNode == "" ? true : false}
                     variantType="outline"
                     variantName="success"
@@ -745,7 +748,7 @@ function App() {
                   />
 
                   <Button
-                    textButton={"Cambiar Padre"}
+                    content={"Cambiar Padre"}
                     disabled={
                       parentCurrentNode === "" || currentNode == ""
                         ? true
@@ -859,7 +862,7 @@ function App() {
                       }}
                     >
                       <Button
-                        textButton={
+                        content={
                           isNewContent
                             ? "Guardar nuevo contenido"
                             : "Actualizar Contenido"
@@ -920,7 +923,7 @@ function App() {
                     }}
                   >
                     <Button
-                      textButton="Add. Info"
+                      content="Add. Info"
                       variantType="outline"
                       variantName="success"
                       disabled={
@@ -937,7 +940,7 @@ function App() {
                 </div>
 
                 <Button
-                  textButton="Agregar Nodo"
+                  content="Agregar Nodo"
                   variantType="outline"
                   variantName="primary"
                   disabled={
