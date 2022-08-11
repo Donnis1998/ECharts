@@ -1,16 +1,15 @@
 import "./App.css";
 import * as echarts from "echarts";
 import { useEffect, useState } from "react";
-//import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
-//import { Button } from "@bsoftsolution/base-ui.ui.button";
-//import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
-//import { Switch } from "@bsoftsolution/base-ui.ui.switch";
+import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
+import { Button } from "@bsoftsolution/base-ui.ui.button";
+import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
+import { Switch } from "@bsoftsolution/base-ui.ui.switch";
 
-
-import { SwitchComponent as Switch } from "@syncfusion/ej2-react-buttons";
-import { DropDownListComponent as DropdownList } from '@syncfusion/ej2-react-dropdowns';
-import { ButtonComponent as Button} from '@syncfusion/ej2-react-buttons';
-import { TextBoxComponent as TextBox} from '@syncfusion/ej2-react-inputs';
+/* import { SwitchComponent as Switch } from "@syncfusion/ej2-react-buttons";
+import { DropDownListComponent as DropdownList } from "@syncfusion/ej2-react-dropdowns";
+import { ButtonComponent as Button } from "@syncfusion/ej2-react-buttons";
+import { TextBoxComponent as TextBox } from "@syncfusion/ej2-react-inputs"; */
 
 import {
   CreateModels,
@@ -51,18 +50,19 @@ function App() {
     GetModelList();
   }, []);
 
-  var myChart;
-  //var eChartId;
-
   useEffect(() => {
     if (listData.length !== 0) {
-      myChart = echarts.init(document.getElementById("main"), undefined, {
-        width: 800,
+      CalculateModelDepth(listData);
+
+      let ancho = (modelDepth + 1) * 300;
+
+      console.log("Profundidad", modelDepth);
+      var myChart = echarts.init(document.getElementById("main"), undefined, {
+        width: ancho,
         height: 800,
         locale: "EN",
       });
 
-      //eChartId = myChart.id;
       //option && myChart.setOption(option);
       myChart.setOption(TreeOptions(listData));
 
@@ -299,6 +299,7 @@ function App() {
     setPrevNodo("");
     setNodo("");
   };
+
   const CambiarPadeDelNodo = () => {
     window.alert(
       `El nuevo padre del nodo ${currentNode} sera ${parentCurrentNode}`
@@ -317,6 +318,19 @@ function App() {
         return 1;
       } else {
         return ChangeParentNode(data.children, nodeParentToFind, nodeInfo);
+      }
+    });
+  };
+
+  var modelDepth = 0;
+
+  const CalculateModelDepth = (arreglo) => {
+    arreglo.map((data, index) => {
+      if (data.children.length === 0 ) {
+        modelDepth = modelDepth + 1;
+        return 1;
+      } else {
+        return CalculateModelDepth(data.children);
       }
     });
   };
@@ -489,6 +503,41 @@ function App() {
                 UpdateModel();
               }}
             />
+
+            {/*
+          Componente BIT
+            <Button
+              variantType="outline"
+              variantName="info"
+              style={{ marginBlock: 20 }}
+              onClick={() => {
+                setImportModel(false);
+                setIsNewModel(true);
+                setIsUpdatingNode(false);
+                NewModel();
+              }}
+            >Nuevo</Button>
+
+            <Button
+              cssClass="e-outline"
+              onClick={() => {
+                setImportModel(true);
+                setIsNewModel(false);
+                NewModel();
+              }}
+            >
+              Importar
+            </Button>
+
+            <Button
+              cssClass="e-outline"
+              disabled={isNewModel || listData.length === 0 ? true : false}
+              onClick={() => {
+                UpdateModel();
+              }}
+            >
+              Guardar Cambios
+            </Button>*/}
           </div>
 
           {(isNewModel || importModel) && (
@@ -587,7 +636,7 @@ function App() {
                 {listData.length > 0 && (
                   <>
                     <p> Modo edición</p>
-                    {/* <Switch
+                     <Switch
                       checked={isUpdatingNode}
                       //disabled={listData.length <= 0 ? true : false}
                       //disabled={listData.length === 0 ? true : false}
@@ -600,7 +649,7 @@ function App() {
                         setCurrentNode("");
                         setPrevNodo("");
                       }}
-                    /> */}
+                    />
                   </>
                 )}
               </div>
