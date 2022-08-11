@@ -6,9 +6,11 @@ import { Button } from "@bsoftsolution/base-ui.ui.button";
 import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
 import { Switch } from "@bsoftsolution/base-ui.ui.switch";
 
-/* import { SwitchComponent as Switch } from "@syncfusion/ej2-react-buttons";
-import { DropDownListComponent as DropdownList } from "@syncfusion/ej2-react-dropdowns";
-import { ButtonComponent as Button } from "@syncfusion/ej2-react-buttons";
+/* import {
+  ButtonComponent,
+  SwitchComponent,
+} from "@syncfusion/ej2-react-buttons";
+import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import { TextBoxComponent as TextBox } from "@syncfusion/ej2-react-inputs"; */
 
 import {
@@ -50,13 +52,14 @@ function App() {
     GetModelList();
   }, []);
 
+  /* Inicializacion del componente Echart */
   useEffect(() => {
     if (listData.length !== 0) {
       CalculateModelDepth(listData);
 
       let ancho = (modelDepth + 1) * 300;
 
-      console.log("Profundidad", modelDepth);
+      //console.log("Profundidad", modelDepth);
       var myChart = echarts.init(document.getElementById("main"), undefined, {
         width: ancho,
         height: 800,
@@ -67,7 +70,6 @@ function App() {
       myChart.setOption(TreeOptions(listData));
 
       myChart.on("click", function (params) {
-        console.log("hizo click");
         document
           .querySelector(".my_tooltip")
           .style.removeProperty("pointer-events");
@@ -326,7 +328,7 @@ function App() {
 
   const CalculateModelDepth = (arreglo) => {
     arreglo.map((data, index) => {
-      if (data.children.length === 0 ) {
+      if (data.children.length === 0) {
         modelDepth = modelDepth + 1;
         return 1;
       } else {
@@ -449,7 +451,6 @@ function App() {
       <div
         style={{
           width: 400,
-          //justifyContent: "center",
           alignContent: "center",
           marginBlock: 20,
           display: "flex",
@@ -503,41 +504,6 @@ function App() {
                 UpdateModel();
               }}
             />
-
-            {/*
-          Componente BIT
-            <Button
-              variantType="outline"
-              variantName="info"
-              style={{ marginBlock: 20 }}
-              onClick={() => {
-                setImportModel(false);
-                setIsNewModel(true);
-                setIsUpdatingNode(false);
-                NewModel();
-              }}
-            >Nuevo</Button>
-
-            <Button
-              cssClass="e-outline"
-              onClick={() => {
-                setImportModel(true);
-                setIsNewModel(false);
-                NewModel();
-              }}
-            >
-              Importar
-            </Button>
-
-            <Button
-              cssClass="e-outline"
-              disabled={isNewModel || listData.length === 0 ? true : false}
-              onClick={() => {
-                UpdateModel();
-              }}
-            >
-              Guardar Cambios
-            </Button>*/}
           </div>
 
           {(isNewModel || importModel) && (
@@ -575,8 +541,8 @@ function App() {
 
         {importModel === true && isNewModel === false && (
           <>
+            {/* Modelos Disponibles */}
             <h4>Seleccione un Modelo</h4>
-
             <div
               style={{
                 display: "flex",
@@ -593,7 +559,7 @@ function App() {
                 operator="StartsWith"
                 variant="success"
                 filterBy="label"
-                placeholder="Árboles disponibles"
+                placeholder="Modelos disponibles"
                 filterBarPlaceholder="Buscar"
                 change={(data) => handleTreeSearch(data.value)}
               />
@@ -636,7 +602,7 @@ function App() {
                 {listData.length > 0 && (
                   <>
                     <p> Modo edición</p>
-                     <Switch
+                    <Switch
                       checked={isUpdatingNode}
                       //disabled={listData.length <= 0 ? true : false}
                       //disabled={listData.length === 0 ? true : false}
