@@ -1,7 +1,7 @@
 import "./App.css";
 import "@bsoftsolution/bsoft-utils.assets.iconography";
 import * as echarts from "echarts";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
 import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
 import { Button } from "@bsoftsolution/base-ui.ui.button";
@@ -33,6 +33,9 @@ function App() {
   const [currentNode, setCurrentNode] = useState("");
   const [listNode, setListNode] = useState([]);
 
+  const [parentCurrentNode, setParentCurrentNode] = useState(""); //Padre el actual nodo seleccionado
+  const [possibleParentsNodes, setPossibleParentsNodes] = useState([]); //Esta lista contiene aquellos nodos que pueden ser utilizados como padre de uno que se encuentre seleccionado, excluyendo de esta lista al nodo seleccionado y sus hijos
+
   /* Contenido de cada nodo */
   const [indexContent, setIndexContent] = useState(0);
   const [keyValue, setKeyValue] = useState("");
@@ -43,18 +46,14 @@ function App() {
     GetModelList();
   }, []);
 
-  var myChart;
-  //var eChartId;
-
   useEffect(() => {
     if (listData.length !== 0) {
-      myChart = echarts.init(document.getElementById("main"), undefined, {
+      var myChart = echarts.init(document.getElementById("main"), undefined, {
         width: 800,
         height: 800,
         locale: "EN",
       });
 
-      //eChartId = myChart.id;
       //option && myChart.setOption(option);
       myChart.setOption(TreeOptions(listData));
 
@@ -243,8 +242,9 @@ function App() {
     });
   };
 
+  var foundNode;
   const SearchNodeUpdate = (arreglo, nodeToFind, mode, index) => {
-    arreglo.map((data) => {
+    arreglo.map((data, i) => {
       if (data.name === nodeToFind) {
         if (mode === "add") {
           data.value.push({ [keyValue]: contentValue });
@@ -261,6 +261,16 @@ function App() {
         if (mode === "change") {
           data.name = nodo;
         }
+
+        if (mode === "get") {
+          foundNode = data;
+        }
+
+        if (mode === "get_delete") {
+          foundNode = data;
+          arreglo.splice(i, 1);
+        }
+
         return 1;
       } else {
         return SearchNodeUpdate(data.children, nodeToFind, mode, index);
@@ -278,6 +288,24 @@ function App() {
     setCurrentNode("");
     setPrevNodo("");
     setNodo("");
+  };
+
+  const CambiarPadreDelNodo = () => {
+    let list = [...listData];
+    SearchNodeUpdate(list, currentNode, "get_delete");
+    ChangeParentNode(list, parentCurrentNode, foundNode);
+    setListData(list);
+  };
+
+  const ChangeParentNode = (arreglo, nodeParentToFind, nodeInfo) => {
+    arreglo.map((data) => {
+      if (data.name === nodeParentToFind) {
+        data.children.push(nodeInfo);
+        return 1;
+      } else {
+        return ChangeParentNode(data.children, nodeParentToFind, nodeInfo);
+      }
+    });
   };
 
   /* Handle Models in Database */
@@ -358,7 +386,56 @@ function App() {
     setImportModel(false); */
   };
 
-  var value = [{ about: "testin information" }, { props: "props information" }];
+  var hijosDeNodo;
+
+  /* Esta función buscará aquellos nodos que puedan ser padre del nodo actual, para ello primero buscará si el nodo actual
+  tiene hijos, ya que estos hijos no podrian ser padres, por tal razon hay que excluirlos */
+  const SearchPossibleParentsNodes = (currentNode) => {
+    BuscarHijosDeNodo(listData, currentNode);
+    GetNodes([hijosDeNodo], []);
+    let posiblesNodosPadres = ObtenerNuevosPosiblesNodosPadres(auxNodes);
+    console.log("posibles nodos padres", posiblesNodosPadres);
+    setPossibleParentsNodes(posiblesNodosPadres);
+  };
+
+  const BuscarHijosDeNodo = (arreglo, nodeToFind) => {
+    arreglo.map((data, i) => {
+      if (data.name === nodeToFind) {
+        hijosDeNodo = data;
+        return 1;
+      } else {
+        return BuscarHijosDeNodo(data.children, nodeToFind);
+      }
+    });
+  };
+
+  const ObtenerNuevosPosiblesNodosPadres = (nodosNoPadres) => {
+    var index_list_for_remove = [];
+    var nuevosNodos = [];
+
+    nodosNoPadres.map((data) => {
+      let index = listNode.findIndex((item) => item.id === data.id);
+      index_list_for_remove.push(index);
+      return 0;
+    });
+
+    index_list_for_remove.map((index) => {
+      if (index !== -1) listNode.splice(index, 1, 0);
+      
+      return 0;
+    });
+
+    listNode.map((data) => {
+      if (typeof data !== "number") {
+        nuevosNodos.push(data);
+      }
+      return 0;
+    });
+
+    return nuevosNodos;
+  };
+
+  //var value = [{ about: "testin information" }, { props: "props information" }];
 
   /*return (
     <div className="info-content">
@@ -607,6 +684,7 @@ function App() {
                       setContentValue("");
                       setKeyValue("");
                       setShowNodeForm(false);
+                      SearchPossibleParentsNodes(data.value);
                     }
                   }}
                 />
@@ -672,12 +750,51 @@ function App() {
 
                   <Button
                     textButton={"Cambiar Nombre"}
-                    disabled={nodo === "" || currentNode == "" ? true : false}
+                    disabled={nodo === "" || currentNode === "" ? true : false}
                     variantType="outline"
                     variantName="success"
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       CambiarNombreNodo();
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <DropdownList
+                    dataSource={possibleParentsNodes}
+                    fields={{ value: "id", text: "label" }}
+                    bsTextbox={true}
+                    variant="success"
+                    allowFiltering={true}
+                    operator="StartsWith"
+                    filterBy="label"
+                    placeholder="Seleccione el nuevo padre"
+                    filterBarPlaceholder="Buscar"
+                    change={(data) => {
+                      setParentCurrentNode(data.value);
+                    }}
+                  />
+
+                  <Button
+                    textButton="Cambiar Padre"
+                    disabled={
+                      parentCurrentNode === "" || currentNode === ""
+                        ? true
+                        : false
+                    }
+                    variantType="outline"
+                    variantName="success"
+                    style={{ marginLeft: 10 }}
+                    onClick={() => {
+                      CambiarPadreDelNodo();
                     }}
                   />
                 </div>
@@ -884,10 +1001,7 @@ function App() {
       {/* Vista del Echart */}
       {listData.length > 0 && (
         <div style={{ overflowX: "scroll", flex: 1 }}>
-          <div
-            style={{ position: "relative" }}
-            id="main"
-          ></div>
+          <div style={{ position: "relative" }} id="main"></div>
         </div>
       )}
     </div>
