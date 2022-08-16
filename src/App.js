@@ -395,7 +395,7 @@ function App() {
     setNodo("");
     setPrevNodo("");
     setListData([]);
-    setCurrentModel('');
+    setCurrentModel("");
 
     /* setIsNewModel(false);
     setImportModel(false); */
@@ -817,7 +817,9 @@ function App() {
                   <Button
                     textButton="Cambiar Padre"
                     disabled={
-                      parentCurrentNode === "" || currentNode === ""
+                      parentCurrentNode === "" ||
+                      prevNodo === "" ||
+                      currentNode === ""
                         ? true
                         : false
                     }
@@ -1032,7 +1034,12 @@ function App() {
       {/* Vista del Echart */}
       {listData.length > 0 && (
         <div style={{ overflowX: "scroll", flex: 1 }}>
-          <div style={{ position: "relative" }} id="main"></div>
+          <div
+            style={{
+              position: "relative",
+            }}
+            id="main"
+          ></div>
         </div>
       )}
     </div>
