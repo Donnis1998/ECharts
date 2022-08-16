@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@bsoftsolution/bsoft-utils.assets.iconography": "^0.0.2",
     "@syncfusion/ej2-react-buttons": "^20.2.40",
     "@syncfusion/ej2-react-dropdowns": "^20.2.40",
     "@syncfusion/ej2-react-grids": "^20.2.40",

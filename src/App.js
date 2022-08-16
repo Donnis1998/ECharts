@@ -7,6 +7,7 @@ import {
 } from "@syncfusion/ej2-react-buttons";
 import { DropDownListComponent as DropdownList } from "@syncfusion/ej2-react-dropdowns";
 import { TextBoxComponent as TextBox } from "@syncfusion/ej2-react-inputs";
+import '@bsoftsolution/bsoft-utils.assets.iconography'
 
 import {
   CreateModels,
@@ -301,10 +302,6 @@ function App() {
   };
 
   const CambiarPadeDelNodo = () => {
-    window.alert(
-      `El nuevo padre del nodo ${currentNode} sera ${parentCurrentNode}`
-    );
-
     let list = [...listData];
     SearchNodeUpdate(list, currentNode, "get_delete");
     ChangeParentNode(list, parentCurrentNode, foundNode);
