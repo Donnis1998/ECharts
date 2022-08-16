@@ -1,11 +1,14 @@
 import "./App.css";
-import "@bsoftsolution/bsoft-utils.assets.iconography";
+//import "@bsoftsolution/bsoft-utils.assets.iconography";
 import * as echarts from "echarts";
-import { useEffect, useRef, useState } from "react";
-import { TextBox } from "@bsoftsolution/base-ui.ui.textbox";
-import { DropdownList } from "@bsoftsolution/base-ui.ui.drop-down-list";
-import { Button } from "@bsoftsolution/base-ui.ui.button";
-import { Switch } from "@bsoftsolution/base-ui.ui.switch";
+import { useEffect, useState } from "react";
+import {
+  ButtonComponent as Button,
+  SwitchComponent as Switch,
+} from "@syncfusion/ej2-react-buttons";
+import { TextBoxComponent as TextBox } from "@syncfusion/ej2-react-inputs";
+import { DropDownListComponent as DropdownList } from "@syncfusion/ej2-react-dropdowns";
+
 import {
   CreateModels,
   DeleteModels,
@@ -43,12 +46,9 @@ function App() {
     GetModelList();
   }, []);
 
-  var myChart;
-  //var eChartId;
-
   useEffect(() => {
     if (listData.length !== 0) {
-      myChart = echarts.init(document.getElementById("main"), undefined, {
+      var myChart = echarts.init(document.getElementById("main"), undefined, {
         width: 800,
         height: 800,
         locale: "EN",
@@ -358,7 +358,7 @@ function App() {
     setImportModel(false); */
   };
 
-  var value = [{ about: "testin information" }, { props: "props information" }];
+  //var value = [{ about: "testin information" }, { props: "props information" }];
 
   /*return (
     <div className="info-content">
@@ -414,7 +414,8 @@ function App() {
             }}
           >
             <Button
-              textButton="Nuevo"
+              //textButton="Nuevo"
+              content="Nuevo"
               variantType="outline"
               variantName="info"
               style={{ marginBlock: 20 }}
@@ -427,7 +428,8 @@ function App() {
             />
 
             <Button
-              textButton="Importar"
+              //textButton="Importar"
+              content="Importar"
               variantType="outline"
               variantName="success"
               style={{ marginBlock: 20 }}
@@ -440,7 +442,8 @@ function App() {
             />
 
             <Button
-              textButton="Guardar cambios"
+              //textButton="Guardar cambios"
+              content="Guardar cambios"
               variantType="outline"
               disabled={isNewModel || listData.length === 0 ? true : false}
               variantName="info"
@@ -470,7 +473,8 @@ function App() {
               />
 
               <Button
-                textButton="Guardar como Nuevo Modelo"
+                //textButton="Guardar como Nuevo Modelo"
+                content="Guardar como Nuevo Modelo"
                 variantType="outline"
                 variantName="primary"
                 disabled={modeloName === "" ? true : false}
@@ -506,11 +510,13 @@ function App() {
                 filterBy="label"
                 placeholder="Árboles disponibles"
                 filterBarPlaceholder="Buscar"
-                change={(data) => handleTreeSearch(data.value)}
+                //change={(data) => handleTreeSearch(data.value)}
+                onChange={(data) => handleTreeSearch(data.value)}
               />
 
               <Button
-                textButton="Eliminar"
+                //textButton="Eliminar"
+                content="Eliminar"
                 variantType="outline"
                 variantName="danger"
                 disabled={
@@ -544,14 +550,22 @@ function App() {
                   alignItems: "center",
                 }}
               >
+
                 {listData.length > 0 && (
-                  <>
-                    <p> Modo edición</p>
+                  <div style={{display:'flex', alignItems:'center'}}>
+                    <p style={{marginRight: 20}}> Modo edición</p>
                     <Switch
                       checked={isUpdatingNode}
-                      //disabled={listData.length <= 0 ? true : false}
-                      //disabled={listData.length === 0 ? true : false}
-                      change={() => {
+                      /* change={() => {
+                        setIsUpdatingNode(!isUpdatingNode);
+                        setlistValue([]);
+                        setKeyValue("");
+                        setContentValue("");
+                        setIndexContent("");
+                        setCurrentNode("");
+                        setPrevNodo("");
+                      }} */
+                      onChange={() => {
                         setIsUpdatingNode(!isUpdatingNode);
                         setlistValue([]);
                         setKeyValue("");
@@ -561,7 +575,7 @@ function App() {
                         setPrevNodo("");
                       }}
                     />
-                  </>
+                  </div>
                 )}
               </div>
             </div>
@@ -596,7 +610,20 @@ function App() {
                   filterBy="label"
                   placeholder="Seleccione el nodo previo"
                   filterBarPlaceholder="Buscar"
-                  change={(data) => {
+                  /* change={(data) => {
+                    if (!isUpdatingNode) {
+                      setPrevNodo(data.value);
+                      setCurrentNode(data.value);
+                    } else {
+                      setPrevNodo(data.value);
+                      setCurrentNode(data.value);
+                      setlistValue(data.itemData.value);
+                      setContentValue("");
+                      setKeyValue("");
+                      setShowNodeForm(false);
+                    }
+                  }} */
+                  onChange={(data) => {
                     if (!isUpdatingNode) {
                       setPrevNodo(data.value);
                       setCurrentNode(data.value);
@@ -630,7 +657,8 @@ function App() {
                   /> */}
 
                     <Button
-                      textButton="Eliminar Nodo"
+                      //textButton="Eliminar Nodo"
+                      content="Eliminar Nodo"
                       variantType="outline"
                       variantName="danger"
                       disabled={
@@ -671,8 +699,9 @@ function App() {
                   />
 
                   <Button
-                    textButton={"Cambiar Nombre"}
-                    disabled={nodo === "" || currentNode == "" ? true : false}
+                    //textButton="Cambiar Nombre"
+                    content="Cambiar Nombre"
+                    disabled={nodo === "" || currentNode === "" ? true : false}
                     variantType="outline"
                     variantName="success"
                     style={{ marginLeft: 10 }}
@@ -781,7 +810,12 @@ function App() {
                       }}
                     >
                       <Button
-                        textButton={
+                        /* textButton={
+                          isNewContent
+                            ? "Guardar nuevo contenido"
+                            : "Actualizar Contenido"
+                        } */
+                        content={
                           isNewContent
                             ? "Guardar nuevo contenido"
                             : "Actualizar Contenido"
@@ -842,7 +876,8 @@ function App() {
                     }}
                   >
                     <Button
-                      textButton="Add. Info"
+                      //textButton="Add. Info"
+                      content="Add. Info"
                       variantType="outline"
                       variantName="success"
                       disabled={
@@ -859,6 +894,7 @@ function App() {
                 </div>
 
                 <Button
+                  content="Agregar Nodo"
                   textButton="Agregar Nodo"
                   variantType="outline"
                   variantName="primary"
@@ -884,10 +920,7 @@ function App() {
       {/* Vista del Echart */}
       {listData.length > 0 && (
         <div style={{ overflowX: "scroll", flex: 1 }}>
-          <div
-            style={{ position: "relative" }}
-            id="main"
-          ></div>
+          <div style={{ position: "relative" }} id="main"></div>
         </div>
       )}
     </div>
