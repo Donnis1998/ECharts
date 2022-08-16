@@ -399,29 +399,47 @@ function App() {
   };
 
   const NewModel = () => {
-    setListData([]);
-    setListNode([]);
+    setModeloName("");
     setlistValue([]);
     setKeyValue("");
     setContentValue("");
-    setModeloName("");
+    setListNode([]);
     setNodo("");
     setPrevNodo("");
+    setListData([]);
 
     /* setIsNewModel(false);
     setImportModel(false); */
   };
 
+  var hijosDeNodo;
+
   const SearchPossibleParentsNodes = (currentNode) => {
-    BuscarHijosDeNodo(listData, currentNode);
-    GetNodes([hijosDeNodo], []);
-    let posiblesNodosPadres = ObtenerNuevosPosiblesNodosPadres(auxNodes);
-    console.log('posibles nodos padres',posiblesNodosPadres)
-    setPossibleParentsNodes(posiblesNodosPadres);
+    BuscarHijosDeNodo(listData, currentNode).then(() => {
+      console.log("Estos son los hijos del nodo", hijosDeNodo);
+
+      GetNodes([hijosDeNodo], []).then(() => {
+
+        let n = [...auxNodes]
+        console.log("nodos obtenidos", auxNodes);
+
+
+        //esto es nuevo
+        GetNodes(listData, []).then(() => {
+          setListNode(auxNodes);
+        });
+
+        ObtenerNuevosPosiblesNodosPadres(n).then(
+          (posiblesNodosPadres) => {
+            console.log("posibles nodos padres", posiblesNodosPadres);
+            setPossibleParentsNodes(posiblesNodosPadres);
+          }
+        );
+      });
+    });
   };
 
-  var hijosDeNodo;
-  const BuscarHijosDeNodo = (arreglo, nodeToFind) => {
+  const BuscarHijosDeNodo = async (arreglo, nodeToFind) => {
     arreglo.map((data, i) => {
       if (data.name === nodeToFind) {
         hijosDeNodo = data;
@@ -432,7 +450,9 @@ function App() {
     });
   };
 
-  const ObtenerNuevosPosiblesNodosPadres = (nodosNoPadres) => {
+  const ObtenerNuevosPosiblesNodosPadres = async (nodosNoPadres) => {
+
+    console.log('listNode que llega', listNode)
     var index_list_for_remove = [];
     var nuevosNodos = [];
 
@@ -454,7 +474,7 @@ function App() {
     return nuevosNodos;
   };
 
-  var value = [{ about: "testin information" }, { props: "props information" }];
+  //var value = [{ about: "testin information" }, { props: "props information" }];
 
   /*return (
     <div className="info-content">
@@ -550,6 +570,7 @@ function App() {
             </Button>
           </div>
 
+          {/* Guardar como nuevo modelo */}
           {(isNewModel || importModel) && (
             <div
               style={{
@@ -766,7 +787,7 @@ function App() {
 
                   <Button
                     content="Cambiar Nombre"
-                    disabled={nodo === "" || currentNode == "" ? true : false}
+                    disabled={nodo === "" || currentNode === "" ? true : false}
                     //variantType="outline"
                     //variantName="success"
                     style={{ marginLeft: 10 }}
@@ -804,7 +825,7 @@ function App() {
                   <Button
                     content="Cambiar Padre"
                     disabled={
-                      parentCurrentNode === "" || currentNode == ""
+                      parentCurrentNode === "" || currentNode === ""
                         ? true
                         : false
                     }
