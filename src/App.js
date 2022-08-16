@@ -32,7 +32,6 @@ function App() {
   const [prevNodo, setPrevNodo] = useState("");
   const [currentNode, setCurrentNode] = useState("");
   const [listNode, setListNode] = useState([]);
-
   const [parentCurrentNode, setParentCurrentNode] = useState(""); //Padre el actual nodo seleccionado
   const [possibleParentsNodes, setPossibleParentsNodes] = useState([]); //Esta lista contiene aquellos nodos que pueden ser utilizados como padre de uno que se encuentre seleccionado, excluyendo de esta lista al nodo seleccionado y sus hijos
 
@@ -48,8 +47,11 @@ function App() {
 
   useEffect(() => {
     if (listData.length !== 0) {
+      CalculateModelDepth(listData);
+      let ancho = (modelDepth + 1) * 300;
+
       var myChart = echarts.init(document.getElementById("main"), undefined, {
-        width: 800,
+        width: ancho,
         height: 800,
         locale: "EN",
       });
@@ -58,7 +60,6 @@ function App() {
       myChart.setOption(TreeOptions(listData));
 
       myChart.on("click", function (params) {
-        console.log("hizo click");
         document
           .querySelector(".my_tooltip")
           .style.removeProperty("pointer-events");
@@ -308,6 +309,19 @@ function App() {
     });
   };
 
+  var modelDepth = 0;
+
+  const CalculateModelDepth = (arreglo) => {
+    arreglo.map((data, index) => {
+      if (data.children.length === 0) {
+        modelDepth = modelDepth + 1;
+        return 1;
+      } else {
+        return CalculateModelDepth(data.children);
+      }
+    });
+  };
+
   /* Handle Models in Database */
 
   /**
@@ -373,14 +387,15 @@ function App() {
   };
 
   const NewModel = () => {
-    setListData([]);
-    setListNode([]);
+    setModeloName("");
     setlistValue([]);
     setKeyValue("");
     setContentValue("");
-    setModeloName("");
+    setListNode([]);
     setNodo("");
     setPrevNodo("");
+    setListData([]);
+    setCurrentModel('');
 
     /* setIsNewModel(false);
     setImportModel(false); */
@@ -391,14 +406,27 @@ function App() {
   /* Esta función buscará aquellos nodos que puedan ser padre del nodo actual, para ello primero buscará si el nodo actual
   tiene hijos, ya que estos hijos no podrian ser padres, por tal razon hay que excluirlos */
   const SearchPossibleParentsNodes = (currentNode) => {
-    BuscarHijosDeNodo(listData, currentNode);
-    GetNodes([hijosDeNodo], []);
-    let posiblesNodosPadres = ObtenerNuevosPosiblesNodosPadres(auxNodes);
-    console.log("posibles nodos padres", posiblesNodosPadres);
-    setPossibleParentsNodes(posiblesNodosPadres);
+    BuscarHijosDeNodo(listData, currentNode).then(() => {
+      console.log("Estos son los hijos del nodo", hijosDeNodo);
+
+      GetNodes([hijosDeNodo], []).then(() => {
+        let n = [...auxNodes];
+        console.log("nodos obtenidos", auxNodes);
+
+        //esto es nuevo
+        GetNodes(listData, []).then(() => {
+          setListNode(auxNodes);
+        });
+
+        ObtenerNuevosPosiblesNodosPadres(n).then((posiblesNodosPadres) => {
+          console.log("posibles nodos padres", posiblesNodosPadres);
+          setPossibleParentsNodes(posiblesNodosPadres);
+        });
+      });
+    });
   };
 
-  const BuscarHijosDeNodo = (arreglo, nodeToFind) => {
+  const BuscarHijosDeNodo = async (arreglo, nodeToFind) => {
     arreglo.map((data, i) => {
       if (data.name === nodeToFind) {
         hijosDeNodo = data;
@@ -409,27 +437,26 @@ function App() {
     });
   };
 
-  const ObtenerNuevosPosiblesNodosPadres = (nodosNoPadres) => {
+  const ObtenerNuevosPosiblesNodosPadres = async (nodosNoPadres) => {
     var index_list_for_remove = [];
     var nuevosNodos = [];
 
     nodosNoPadres.map((data) => {
       let index = listNode.findIndex((item) => item.id === data.id);
       index_list_for_remove.push(index);
-      return 0;
+      //return 0;
     });
 
     index_list_for_remove.map((index) => {
       if (index !== -1) listNode.splice(index, 1, 0);
-      
-      return 0;
+      //return 0;
     });
 
     listNode.map((data) => {
       if (typeof data !== "number") {
         nuevosNodos.push(data);
       }
-      return 0;
+      //return 0;
     });
 
     return nuevosNodos;
@@ -524,10 +551,12 @@ function App() {
               style={{ marginBlock: 20 }}
               onClick={() => {
                 UpdateModel();
+                setIsUpdatingNode(false);
               }}
             />
           </div>
 
+          {/* Guardar como nuevo modelo */}
           {(isNewModel || importModel) && (
             <div
               style={{
@@ -561,6 +590,7 @@ function App() {
         </>
         <hr />
 
+        {/* Modelos Disponibles */}
         {importModel === true && isNewModel === false && (
           <>
             <h4>Seleccione un Modelo</h4>
@@ -574,6 +604,7 @@ function App() {
               }}
             >
               <DropdownList
+                value={currentModel}
                 dataSource={listAvailableTrees}
                 fields={{ value: "id", text: "label" }}
                 bsTextbox={true}

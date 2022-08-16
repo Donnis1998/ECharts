@@ -49,7 +49,7 @@ export const TreeOptions = (model) => {
       //width: 100,
       className: "my_tooltip contenedor", //Specify the classes for the tooltip root DOM ,
       //extraCssText: 'word-break: break-all',
-      position: "bottom",
+      position: "right",
       formatter: function (param) {
         return Modal(param);
         //return customComponent2(param);
